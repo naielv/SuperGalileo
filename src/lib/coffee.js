@@ -1,3 +1,5 @@
+import { m } from './paraglide/messages';
+
 export const COFFEE_PREFIX = 'supercafe:';
 
 export const ORDER_STATES = ['Pedido', 'En preparación', 'Listo', 'Entregado', 'Deuda'];
@@ -10,9 +12,10 @@ export const DEFAULT_COFFEE_PRICES = {
 	colacao: 25
 };
 
-function option(value, ...icons) {
+function option(value, label, ...icons) {
 	return {
 		value,
+		label: label,
 		icons: icons.map((icon) => `${icon}`)
 	};
 }
@@ -21,45 +24,57 @@ export const ORDER_OPTIONS = {
 	Selección: {
 		icon: '/static/ico/preferences.png',
 		options: [
-			option('Solo Leche', '/static/ico/milk.png'),
-			option('Solo café (sin leche)', '/static/ico/coffee_bean.png'),
-			option('Café con leche', '/static/ico/coffee_bean.png', '/static/ico/milk.png'),
-			option('ColaCao con leche', '/static/ico/colacao.jpg', '/static/ico/milk.png'),
-			option('Leche con cereales', '/static/ico/cereales.png', '/static/ico/milk.png'),
-			option('Infusión', '/static/ico/tea_bag.png')
+			option('Solo Leche', m.coffee_only_milk(), '/static/ico/milk.png'),
+			option('Solo café (sin leche)', m.coffee_only(), '/static/ico/coffee_bean.png'),
+			option(
+				'Café con leche',
+				m.coffee_with_milk(),
+				'/static/ico/coffee_bean.png',
+				'/static/ico/milk.png'
+			),
+			option(
+				'ColaCao con leche',
+				m.colacao_with_milk(),
+				'/static/ico/colacao.jpg',
+				'/static/ico/milk.png'
+			),
+			option(
+				'Leche con cereales',
+				m.coffee_milk_with_cereal(),
+				'/static/ico/cereales.png',
+				'/static/ico/milk.png'
+			),
+			option('Infusión', m.infusion(), '/static/ico/tea_bag.png')
 		]
 	},
 	Tamaño: {
 		icon: '/static/ico/sizes.png',
 		options: [
-			option('Grande', '/static/ico/keyboard_key_g.png'),
-			option('Pequeño', '/static/ico/keyboard_key_p.png')
+			option('Grande', m.big(), '/static/ico/keyboard_key_g.png'),
+			option('Pequeño', m.small(), '/static/ico/keyboard_key_p.png')
 		]
 	},
 	Temperatura: {
 		icon: '/static/ico/thermometer2.png',
 		options: [
+			option('Caliente', m.hot(), '/static/ico/arrow_up_red.png', '/static/ico/fire.png'),
 			option(
-				'Caliente',
-				'/static/ico/arrow_up_red.png',
-				'/static/ico/fire.png'
+				'Templado',
+				m.middletemp(),
+				'/static/ico/thermometer2.png',
+				'/static/ico/arrow_left_green.png'
 			),
-			option('Templado', '/static/ico/thermometer2.png', '/static/ico/arrow_left_green.png'),
-			option(
-				'Frio',
-				'/static/ico/arrow_down_blue.png',
-				'/static/ico/snowflake.png'
-			)
+			option('Frio', m.cold(), '/static/ico/arrow_down_blue.png', '/static/ico/snowflake.png')
 		]
 	},
 	Leche: {
 		icon: '/static/ico/milk.png',
 		options: [
-			option('de Vaca', '/static/ico/cow.png', '/static/ico/add.png'),
-			option('Sin lactosa', '/static/ico/cow.png', '/static/ico/delete.png'),
-			option('Vegetal', '/static/ico/milk.png', '/static/ico/wheat.png'),
-			option('Almendras', '/static/ico/milk.png', '/static/ico/almond.svg'),
-			option('Agua', '/static/ico/water_tap.png')
+			option('de Vaca', m.cowmilk(), '/static/ico/cow.png', '/static/ico/add.png'),
+			option('Sin lactosa', m.lactosefree(), '/static/ico/cow.png', '/static/ico/delete.png'),
+			option('Vegetal', m.vegetal(), '/static/ico/milk.png', '/static/ico/wheat.png'),
+			option('Almendras', m.almonds(), '/static/ico/milk.png', '/static/ico/almond.svg'),
+			option('Agua', m.water(), '/static/ico/water_tap.png')
 		]
 	},
 	Cafeina: {

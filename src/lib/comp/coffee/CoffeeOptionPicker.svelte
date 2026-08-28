@@ -43,7 +43,7 @@
 							<img src={icon} alt="" />
 						{/each}
 					</span>
-					<span>{option.value}</span>
+					<span>{option.label || option.value}</span>
 				</button>
 			{/each}
 		</div>

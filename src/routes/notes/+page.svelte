@@ -7,6 +7,7 @@
 	import DataTable from '$lib/comp/DataTable.svelte';
 	import DataListRow from '$lib/comp/DataListRow.svelte';
 	import genericAvatar from '$lib/assets/user_generic.png';
+	import { m } from '$lib/paraglide/messages';
 	let activeDbName = $state('');
 	let dbInstance = $state(null);
 	let feedback = $state({ type: 'info', message: '' });
@@ -70,9 +71,9 @@
 
 {#if dbInstance}
 	<div class="flex-header">
-		<h1>Notas</h1>
+		<h1>{m.notes()}</h1>
 		<div class="top-actions">
-			<LinkButton href="/notes/_new" icon={mdiNotePlus} label="Nueva Nota" background="#2a4f90" />
+			<LinkButton href="/notes/_new" icon={mdiNotePlus} label={m.new_note()} background="darkolivegreen" />
 		</div>
 	</div>
 
@@ -151,10 +152,10 @@
 							class="button mini-btn"
 							href={`/notes/${encodeURIComponent(note._id.split(':')[1])}`}
 						>
-							<SvgIcon path={mdiPencil} type="mdi" size="1.2em" />
+							<SvgIcon path={mdiPencil} type="mdi" size="1.75em" />
 						</a>
 						<button class="button danger mini-btn" onclick={() => deleteNote(note)}>
-							<SvgIcon path={mdiDelete} type="mdi" size="1.2em" />
+							<SvgIcon path={mdiDelete} type="mdi" size="1.75em" />
 						</button>
 					{/snippet}
 				</DataListRow>

@@ -48,10 +48,10 @@
 	{/snippet}
 	{#snippet actions()}
 		<a class="button mini-btn" href={`/people/${personId}`} aria-label="Editar persona">
-			<SvgIcon path={mdiPencil} type="mdi" size="1.2em" />
+			<SvgIcon path={mdiPencil} type="mdi" size="1.75em" />
 		</a>
 		<button class="button danger mini-btn" onclick={() => onDelete?.(person)} aria-label="Eliminar persona">
-			<SvgIcon path={mdiDelete} type="mdi" size="1.2em" />
+			<SvgIcon path={mdiDelete} type="mdi" size="1.75em" />
 		</button>
 	{/snippet}
 </DataListRow>

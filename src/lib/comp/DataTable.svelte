@@ -232,7 +232,7 @@
 			{#each filterFields as field}
 				<div class="filter-select-wrapper">
 					<select bind:value={activeFilters[field]} class="filter-select">
-						<option value="all">Todos ({field})</option>
+						<option value="all">({field})</option>
 						{#each filterOptions[field] || [] as opt}
 							<option value={opt}>{opt}</option>
 						{/each}
@@ -245,7 +245,7 @@
 					<select bind:value={groupBy} class="filter-select">
 						<option value="">{m.ungrouped()}</option>
 						{#each groupByFields as group}
-							<option value={group.key}>{m.group_by({ field: group.label })}</option>
+							<option value={group.key}>{group.label}</option>
 						{/each}
 					</select>
 				</div>
@@ -256,15 +256,15 @@
 					<select bind:value={sortBy} class="filter-select">
 						<option value="">{m.unsorted()}</option>
 						{#each sortByFields as sort}
-							<option value={sort.key}>{m.sort_by({ field: sort.label })}</option>
+							<option value={sort.key}>{sort.label}</option>
 						{/each}
 					</select>
 				</div>
 			{/if}
 		</div>
 
-		<button class="button mini reload-btn" onclick={loadData} disabled={loading} title={m.reload()}>
-			<SvgIcon path={mdiRefresh} type="mdi" size="1.2em" />
+		<button class="button mini-btn accent reload-btn" onclick={loadData} disabled={loading} title={m.reload()}>
+			<SvgIcon path={mdiRefresh} type="mdi" size="2em" />
 		</button>
 	</div>
 
@@ -282,17 +282,11 @@
 							onkeydown={(event) =>
 								(event.key === 'Enter' || event.key === ' ') && toggleGroupCollapse(group.key)}
 						>
-							<div class="group-header-cell" role="cell">
-								<div class="group-header-content">
-									<SvgIcon
-										path={collapsedGroups[group.key] ? mdiChevronRight : mdiChevronDown}
-										type="mdi"
-										size="1.2em"
-									/>
-									<b>{group.label}</b>
-									<span class="group-count">({group.items.length})</span>
-								</div>
-							</div>
+							<span class="group-chevron">
+								{collapsedGroups[group.key] ? "x" : ">"}
+							</span>
+							<b>{group.label}</b>
+							<span class="group-count">({group.items.length})</span>
 						</div>
 					{/if}
 
@@ -323,6 +317,8 @@
 
 <style>
 	.datatable-container {
+		border: 2px solid var(--accent);
+		border-radius: 12px;
 		width: 100%;
 	}
 
@@ -346,17 +342,12 @@
 	.control-bar {
 		display: flex;
 		justify-content: space-between;
-		align-items: center;
-		background: #ffffff;
+		align-items: stretch;
 		color: #1f2937;
         color-scheme: light;
-		padding: 12px;
 		border-radius: 12px;
-		margin-bottom: 18px;
-		border: 1px solid #dbe3ea;
-		box-shadow: 0 3px 12px rgb(15 23 42 / 6%);
 		flex-wrap: wrap;
-		gap: 10px;
+		gap: 0;
 	}
     @media print {
         .control-bar {
@@ -368,7 +359,7 @@
 
 	.search-and-filters {
 		display: flex;
-		gap: 10px;
+		gap: 0;
 		flex-wrap: wrap;
 		flex: 1;
 	}
@@ -377,11 +368,14 @@
 		flex: 1;
 		min-width: 200px;
 		padding: 9px 12px;
-		border: 1px solid #cbd5e1;
-		border-radius: 8px;
+		border: 2px solid var(--accent);
+		border-top: none;
+		border-left: none;
+		border-right-width: 1px;
+		border-radius: 8px 0 0 0;
 		margin-top: 0 !important;
         color: #000;
-        background: #fff;
+        background: transparent;
 	}
     .search-input::placeholder {
         color: #a0a;
@@ -392,24 +386,24 @@
 	}
 
 	.filter-select {
-		padding: 9px 30px 9px 12px;
-		border: 1px solid #cbd5e1;
-		border-radius: 8px;
-		background: white;
+		padding: 9px 16px 9px 12px;
+		border: 2px solid var(--accent);
+		border-radius: 0;
+		border-left: none;
+		border-top: none;
+		border-right-width: 1px;
+		background: transparent;
 		margin-top: 0 !important;
 		width: auto !important;
 	}
 
 	.reload-btn {
-		padding: 9px;
-		border-radius: 8px;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
+		border-radius: 0 8px 0 0;
+		/* border-bottom: 2px solid var(--accent); */
 	}
 
 	.table-wrapper {
-		border-radius: 4px;
+		padding: 15px;
         overflow: visible;
 	}
 
@@ -418,28 +412,23 @@
 		gap: 14px;
 		grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
 	}
-
-	:global(.data-list-row) {
+	.group-header-row {
+		background: var(--accent);
+		color: #fff;
+		grid-column: 1 / span all;
+		padding: 5px 7.5px;
+		text-align: center;
+		border-radius: 8px;
+		justify-self: center;
 		display: flex;
 		align-items: center;
-		flex-wrap: wrap;
-		min-width: 0;
-		border: 1px solid #888;
-		background: #fff;
-		box-shadow: 0 4px 14px rgb(15 23 42 / 7%);
-		transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+		flex-direction: row;
+		gap: 7.5px;
 	}
-
-	:global(.data-list-row:hover) {
-		border-color: #94a3b8;
-		box-shadow: 0 8px 20px rgb(15 23 42 / 11%);
-		transform: scale(1.025);
-	}
-
-	:global(.data-list-cell) {
-		min-width: 0;
-		text-align: left;
-		line-height: 1.25;
+	.group-chevron {
+		font-family: monospace;
+		font-size: 18px;
+		text-align: center;
 	}
 	:global(.dl-field) {
 		display: flex;
@@ -449,19 +438,13 @@
 	}
 	:global(.dl-field small) {
 		font-size: 13px;
-		color: #888;
+		color: #444;
 		font-weight: lighter;
 	}
 	:global(.dl-field a) {
 		color: inherit;
 		text-decoration: none;
 	}
-
-	:global(.data-list-cell.align-right),
-	:global(.data-list-cell.align-right .th-content) {
-        justify-content: flex-end;
-		text-align: right;
-    }
 
 	.th-content {
 		display: flex;
@@ -470,8 +453,7 @@
 	}
 
 	.group-count {
-		color: #64748b;
-		font-size: 13px;
+		font-weight: lighter;
 	}
 
 	.no-data {

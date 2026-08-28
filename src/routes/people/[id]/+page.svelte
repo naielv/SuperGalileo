@@ -16,7 +16,8 @@
 	} from '@mdi/js';
 	import FormSubmitButton from '$lib/comp/buttons/FormSubmitButton.svelte';
 	import ActionButton from '$lib/comp/buttons/ActionButton.svelte';
-	import { m } from '$lib/paraglide/messages';
+	import { go_back_personas, m } from '$lib/paraglide/messages';
+	import LinkButton from '$lib/comp/buttons/LinkButton.svelte';
 
 	// Get ID from route params
 	const idParam = page.params.id;
@@ -205,11 +206,11 @@
 	});
 </script>
 
-<div class="header-container">
-	<a href="/people" class="back-link">
-		<SvgIcon path={mdiArrowLeft} type="mdi" size="1.2em" /> {m.go_back_personas()}
-	</a>
+<div class="flex-header">
 	<h1>{isNew ? m.new_person() : m.edit_wname({ name: nombre })}</h1>
+	<div class="top-actions">
+		<LinkButton href="/people" icon={mdiArrowLeft} label={m.go_back_personas()} />
+	</div>
 </div>
 
 <main>
@@ -350,11 +351,6 @@
   gap: 5px;
   border: 1px solid #000;
   margin: 0;
-}
-@media (prefers-color-scheme: dark) {
-  .roles-permissions label {
-    border: 1px solid #fff;
-  }
 }
 .roles-permissions label input[type="checkbox"] {
   width: 20px;

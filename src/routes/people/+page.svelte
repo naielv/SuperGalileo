@@ -76,7 +76,7 @@
 				href="/people/_new"
 				icon={mdiAccountPlus}
 				label={m.new_person()}
-				background="#2a4f90"
+				background="darkolivegreen"
 			/>
 		</div>
 	</div>
@@ -182,13 +182,5 @@
 		display: flex;
 		justify-content: flex-end;
 		gap: 6px;
-	}
-
-	.mini-btn {
-		padding: 6px;
-		border-radius: 4px;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
 	}
 </style>

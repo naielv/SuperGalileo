@@ -18,6 +18,8 @@
 		parseOrder,
 		personIdFromValue
 	} from '$lib/coffee';
+	import LinkButton from '../buttons/LinkButton.svelte';
+	import { m } from '$lib/paraglide/messages';
 
 	let { id = '', isNew = false } = $props();
 	let dbInstance = $state(null);
@@ -149,122 +151,118 @@
 
 <svelte:head><title>{isNew ? 'Nueva comanda' : 'Editar comanda'} | Cafetería</title></svelte:head>
 
-<div class="header-container">
-	<a href="/coffee_shop" class="back-link"
-		><SvgIcon path={mdiArrowLeft} type="mdi" size="1.2em" /> Cafetería</a
-	>
+<div class="flex-header">
 	<h1>{isNew ? 'Nueva comanda' : 'Editar comanda'}</h1>
+	<div class="top-actions">
+		<LinkButton href="/coffee_shop" icon={mdiArrowLeft} label={m.coffee_shop()} />
+	</div>
 </div>
-<main>
-	{#if feedback.message}<p class="status-banner {feedback.type}">{feedback.message}</p>{/if}
-	{#if dbInstance}
-		<form onsubmit={saveOrder}>
-			<div class="grid">
-				{#if !isNew}
-					<fieldset>
-						<legend>Datos del pedido</legend>
-						<label
-							><b>Fecha</b><input type="date" bind:value={order.Fecha} required readonly /></label
-						>
-						<label
-							><b>Estado</b><select bind:value={order.Estado}
-								>{#each ORDER_STATES as state}<option value={state}>{state}</option>{/each}</select
-							></label
-						>
-					</fieldset>
-				{/if}
+{#if feedback.message}
+	<p class="status-banner {feedback.type}">{feedback.message}</p>
+{/if}
+{#if dbInstance}
+	<form onsubmit={saveOrder}>
+		<div class="grid">
+			{#if !isNew}
 				<fieldset>
-					<legend>Detalle de la comanda</legend>
-					<PersonSelector required bind:selected={selectedPerson} />
-					<hr style="margin: 10px auto; max-width: 75%; border-top: 3px dashed #000;" />
-					{#each Object.entries(ORDER_OPTIONS) as [key, { options, fieldIcon, icon }]}
-						<label
-							><CoffeeOptionPicker
-								label={key}
-								{options}
-								{fieldIcon}
-								{icon}
-								bind:selected={orderDetails[key]}
-							/></label
-						>
-					{/each}
-					<p class="price">
-						Total: <strong>{(calculateOrderPrice(orderDetails, prices) / 100).toFixed(2)} €</strong>
-					</p>
-          <details>
-            <summary>Notas</summary>
-            <textarea bind:value={order.Notas} rows="4" placeholder="Notas adicionales..."></textarea>
-          </details>
-					<hr style="margin: 10px auto; max-width: 75%; border-top: 3px dashed #000;" />
-					<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 15px;">
-						<!-- If saldo < precio, show the amount of debt (delta) -->
-						{#if saldoMonedero < calculateOrderPrice(orderDetails, prices) / 100}
-							<div
-								class="debt-warning"
-								style="display: flex; flex-direction: column; align-items: center; border: 1px solid #ccc; padding: 5px; border-radius: 5px; gap: 5px"
-							>
-								<b>Saldo insuficiente</b>
-								<small
-									>Producirá deuda a no ser que se pague {(
-										calculateOrderPrice(orderDetails, prices) / 100 -
-										saldoMonedero
-									).toFixed(2)} €</small
-								>
-							</div>
-						{/if}
-						{#if debtCount >= 3}
-							<div
-								class="debt-warning"
-								style="display: flex; flex-direction: column; align-items: center; border: 1px solid #ccc; padding: 5px; border-radius: 5px; gap: 5px"
-							>
-								<b>Bloqueo de comanda por deuda</b>
-								<small>{debtCount} comandas en deuda</small>
-							</div>
-						{/if}
-					</div>
-					<FormSubmitButton label={saving ? 'Guardando...' : 'Guardar'} icon={mdiContentSave} />
-					{#if !isNew}<ActionButton
-							label="Eliminar"
-							icon={mdiDelete}
-							background="#9f1a1a"
-							onclick={deleteOrder}
-						/>{/if}
+					<legend>Datos del pedido</legend>
+					<label>
+						<b>Fecha</b>
+						<input type="date" bind:value={order.Fecha} required readonly />
+					</label>
+					<label>
+						<b>Estado</b>
+						<select bind:value={order.Estado}>
+							{#each ORDER_STATES as state}
+								<option value={state}>{state}</option>
+							{/each}
+						</select>
+					</label>
 				</fieldset>
-			</div>
-		</form>
-	{:else}<div class="no-db-warning">
-			Configura una base de datos activa en <a href="/settings/database">Ajustes de Base de Datos</a
-			>.
-		</div>{/if}
-</main>
+			{/if}
+			<fieldset>
+				<legend>Detalle de la comanda</legend>
+				<PersonSelector required bind:selected={selectedPerson} />
+				<hr style="margin: 10px auto; max-width: 75%; border-top: 3px dashed #000;" />
+				{#each Object.entries(ORDER_OPTIONS) as [key, { options, fieldIcon, icon }]}
+					<label>
+						<CoffeeOptionPicker
+							label={key}
+							{options}
+							{fieldIcon}
+							{icon}
+							bind:selected={orderDetails[key]}
+						/>
+					</label>
+				{/each}
+				<p class="price">
+					Total: <strong>
+						{(calculateOrderPrice(orderDetails, prices) / 100).toFixed(2)} €
+					</strong>
+				</p>
+				<details>
+					<summary>Notas</summary>
+					<textarea bind:value={order.Notas} rows="4" placeholder="Notas adicionales..."
+					></textarea>
+				</details>
+				<hr style="margin: 10px auto; max-width: 75%; border-top: 3px dashed #000;" />
+				<div
+					style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 15px;"
+				>
+					<!-- If saldo < precio, show the amount of debt (delta) -->
+					{#if saldoMonedero < calculateOrderPrice(orderDetails, prices) / 100}
+						<div
+							class="debt-warning"
+							style="display: flex; flex-direction: column; align-items: center; border: 1px solid #ccc; padding: 5px; border-radius: 5px; gap: 5px"
+						>
+							<b>Saldo insuficiente</b>
+							<small>
+								Producirá deuda a no ser que se pague {(
+									calculateOrderPrice(orderDetails, prices) / 100 -
+									saldoMonedero
+								).toFixed(2)} €
+							</small>
+						</div>
+					{/if}
+					{#if debtCount >= 3}
+						<div
+							class="debt-warning"
+							style="display: flex; flex-direction: column; align-items: center; border: 1px solid #ccc; padding: 5px; border-radius: 5px; gap: 5px"
+						>
+							<b>Bloqueo de comanda por deuda</b>
+							<small>{debtCount} comandas en deuda</small>
+						</div>
+					{/if}
+				</div>
+				<FormSubmitButton label={saving ? 'Guardando...' : 'Guardar'} icon={mdiContentSave} />
+				{#if !isNew}
+					<ActionButton
+						label="Eliminar"
+						icon={mdiDelete}
+						background="#9f1a1a"
+						onclick={deleteOrder}
+					/>
+				{/if}
+			</fieldset>
+		</div>
+	</form>
+{:else}
+	<div class="no-db-warning">
+		Configura una base de datos activa en <a href="/settings/database">Ajustes de Base de Datos</a
+		>.
+	</div>
+{/if}
 
 <style>
-	.header-container {
-		background: darkslateblue;
-		padding: 5px 20px;
-		color: white;
-		text-align: center;
-		position: relative;
-	}
-	.header-container h1 {
-		background: transparent;
-		padding: 0;
-		margin: 0;
-	}
-	.back-link {
-		position: absolute;
-		left: 15px;
-		top: 50%;
-		transform: translateY(-50%);
-		color: white;
-		text-decoration: none;
-		display: flex;
-		align-items: center;
-		gap: 5px;
+	.fieldset {
+	    max-width: 200px;
 	}
 	.grid {
+		display: flex;
 		max-width: 400px;
 		margin: 0 auto;
+		gap: 15px;
+		flex-direction: column;
 	}
 	label {
 		display: block;

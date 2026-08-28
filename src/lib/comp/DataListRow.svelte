@@ -62,7 +62,7 @@
         text-align: center;
 		justify-content: center;
 		min-width: 70px;
-		border-right: 1px solid #cbd5e1;
+		border-right: 1px solid #888;
 		padding: 3px;
 		color: inherit;
 		text-decoration: none;
@@ -85,6 +85,7 @@
 	}
 
 	.row-actions {
+		border-left: 1px solid #888;
         display: flex;
         gap: 3px;
         width: 100%;

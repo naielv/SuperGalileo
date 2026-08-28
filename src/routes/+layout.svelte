@@ -51,7 +51,10 @@
 	let currentSyncRandomInt = $state(null);
 </script>
 
-<svelte:head><link rel="icon" href={favicon} /></svelte:head>
+<svelte:head>
+	<link rel="icon" href={favicon} />
+	<title>{m.app_name()}</title>
+</svelte:head>
 
 <div class="shell" class:sidebarOpen={sidebar_open} style:--accent={currentSyncRandomInt === null ? "black" : `hsl(${currentSyncRandomInt}deg 40% 30%)`}>
 	<Header

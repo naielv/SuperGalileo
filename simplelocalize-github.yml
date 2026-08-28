@@ -1,0 +1,24 @@
+# Documentation: https://simplelocalize.io/docs/integrations/github-app/
+# You can use {lang} and {ns} placeholders in paths
+
+upload:
+  when:
+    push:
+  files:
+    - path: "messages/es.json" # Path to your source translations
+      format: "single-language-json" # Input file format
+      language-key: "es" # Input language key
+      options:
+        - UPDATE_TRANSLATIONS
+        - DEPRECATE_NOT_PRESENT_KEYS
+        - ACTIVATE_PRESENT_KEYS
+
+download:
+  files:
+    - path: "messages/{lang}.json" # Output translations
+      format: "single-language-json" # Output file format
+      sort: "LEXICOGRAPHICAL"
+      options:
+        - "EXCLUDE_DEPRECATED_KEYS"
+
+pull-request:

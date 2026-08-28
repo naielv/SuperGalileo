@@ -193,9 +193,4 @@
 	.options button span {
 		text-align: center;
 	}
-	@media (max-width: 560px) {
-		.options {
-			grid-template-columns: 1fr;
-		}
-	}
 </style>

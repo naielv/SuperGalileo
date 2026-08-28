@@ -17,12 +17,9 @@ body {
 	background: #fff;
 }
 .accent {
-	color: white;
-	background-color: var(--accent, black);
+	color: white !important;
+	background-color: var(--accent, black) !important;
 	transition: background-color 1.75s ease-in-out;
-	border-radius: 28px;
-	padding: 10px 20px;
-	display: inline-block;
 }
 
 p,
@@ -66,7 +63,6 @@ main {
 	background: #fff;
 	max-width: 750px;
 	margin: 0 auto;
-	padding: 15px;
 }
 
 .center {
@@ -125,15 +121,11 @@ main {
 }
 
 h1 {
-	padding: 10px 5px;
-	padding-top: 2.5px;
 	display: block;
 	text-align: center;
 	align-items: flex-start;
 	justify-content: center;
 	flex-direction: row;
-	/* color: white;
-  background: darkslateblue; */
 }
 h1.flex {
 	display: flex;
@@ -872,18 +864,25 @@ body:has(.footer) .fab2 {
 }
 
 .mini-btn {
-	padding: 5px;
+	padding: 2px;
+	border-radius: 4px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .flex-header {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: space-between;
-	align-items: flex-start;
+	align-items: center;
+	margin-bottom: 10px;
+    gap: 5px;
 }
 
 .top-actions {
 	display: flex;
+	flex-wrap: wrap;
 	justify-content: flex-end;
 	gap: 10px;
 }

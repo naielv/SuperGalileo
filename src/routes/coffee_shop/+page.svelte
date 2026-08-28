@@ -15,6 +15,7 @@
 	} from '$lib/coffee';
 	import { getLocale } from '$lib/paraglide/runtime';
 	import genericAvatar from '$lib/assets/user_generic.png';
+	import { m } from '$lib/paraglide/messages';
 
 	let dbInstance = $state(null);
 	let people = $state({});
@@ -30,7 +31,7 @@
 		{ label: 'Acciones' }
 	];
 	const searchFields = ['Persona', 'Comanda'];
-	const filterFields = ['Persona', 'Estado'];
+	const filterFields = ['Fecha', 'Estado'];
 	const sortByFields = [
 		{ label: 'Fecha', key: 'Fecha' },
 		{ label: 'Persona', key: 'Persona' },
@@ -140,21 +141,19 @@
 	});
 </script>
 
-<svelte:head><title>Cafetería</title></svelte:head>
-
 {#if feedback.message}<p class="status-banner {feedback.type}">{feedback.message}</p>{/if}
 {#if dbInstance}
 <div class="flex-header">
-	<h1>Cafetería</h1>
+	<h1>{m.coffee_shop()}</h1>
 	<div class="top-actions">
+		<LinkButton href="/settings/app" icon={mdiCog} label={m.coffee_prices()} />
+		<LinkButton href="/coffee_shop/_kitchen" icon={mdiMonitor} label={m.coffee_kds()} />
 		<LinkButton
 			href="/coffee_shop/_new"
 			icon={mdiPlus}
-			label="Nueva comanda"
-			background="#2a4f90"
+			label={m.new_coffee_order()}
+			background="darkolivegreen"
 		/>
-		<LinkButton href="/settings/app" icon={mdiCog} label="Precios" />
-		<LinkButton href="/coffee_shop/_kitchen" icon={mdiMonitor} label="Pantalla Cocina" />
 	</div>
 </div>
 
@@ -162,6 +161,7 @@
 		{dbInstance}
 		startkey={COFFEE_PREFIX}
 		endkey={`${COFFEE_PREFIX}\uffff`}
+		groupByFields={[{ label: m.status(), key: 'Estado' }]}
 		{columns}
 		{searchFields}
 		{filterFields}
@@ -190,15 +190,15 @@
 				{/snippet}
 				{#snippet content()}
 					<div class="dl-field" role="cell">
-						<small>Fecha</small>
+						<small>{m.date()}</small>
 						{formatDate(order.Fecha) || '-'}
 					</div>
 					<div class="dl-field" role="cell">
-						<small>Comanda</small>
+						<small>{m.coffee_order()}</small>
 						<span>{orderSummary(order)}</span>
 					</div>
 					<div class="dl-field" role="cell">
-						<small>Precio</small>
+						<small>{m.price()}</small>
 						{(calculateOrderPrice(parseOrder(order.Comanda), prices) / 100).toFixed(2)} €
 					</div>
 				{/snippet}
@@ -208,14 +208,14 @@
 						href={`/coffee_shop/${encodeURIComponent(order._id.replace(COFFEE_PREFIX, ''))}`}
 						aria-label="Editar comanda"
 					>
-						<SvgIcon path={mdiPencil} type="mdi" size="1.1em" />
+						<SvgIcon path={mdiPencil} type="mdi" size="1.75em" />
 					</a>
 					<button
 						class="button danger mini-btn"
 						onclick={() => deleteOrder(order)}
 						aria-label="Eliminar comanda"
 					>
-						<SvgIcon path={mdiDelete} type="mdi" size="1.1em" />
+						<SvgIcon path={mdiDelete} type="mdi" size="1.75em" />
 					</button>
 				{/snippet}
 			</DataListRow>
@@ -246,12 +246,6 @@
 		display: flex;
 		gap: 6px;
 		align-items: center;
-	}
-	:global(.mini-btn) {
-		padding: 6px;
-		display: inline-flex;
-		align-items: center;
-		gap: 4px;
 	}
 	.status-banner,
 	.no-db-warning {
