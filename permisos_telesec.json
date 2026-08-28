@@ -1,0 +1,22 @@
+{
+  "ADMIN": "Administrador",
+  "personas": "Personas",
+  "personas:edit": "&gt; Editar",
+  "dataman": "Ajustes",
+  "aulas": "Aulas (Solo docentes!)",
+  "aulas:resumen_diario": "> Resumen diario",
+  "aulas:puntos_interes": "> Puntos de interés",
+  "aulas:asistencia": "> Asistencia",
+  "supercafe": "Cafetería",
+  "supercafe:edit": "&gt; Editar",
+  "pagos": "Pagos",
+  "pagos:edit": "&gt; Editar",
+  "comedor": "Comedor",
+  "comedor:edit": "&gt; Editar",
+  "materiales": "Almacén",
+  "materiales:edit": "&gt; Editar",
+  "notas": "Notas",
+  "notas:edit": "&gt; Editar",
+  "actividades": "Actividades",
+  "actividades:edit": "&gt; Editar"
+}
