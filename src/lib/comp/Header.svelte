@@ -1,13 +1,13 @@
 <script>
 	import { getLocale, setLocale } from '$lib/paraglide/runtime';
 	import SvgIcon from '@jamescoyle/svelte-icon';
-	import { mdiAccount, mdiTranslate, mdiDatabase, mdiAlert } from '@mdi/js';
+	import { mdiAccount, mdiTranslate, mdiDatabase, mdiAlert, mdiMenu } from '@mdi/js';
 	import { m } from '$lib/paraglide/messages.js';
 	import { onMount, onDestroy } from 'svelte';
 	import { getLocalRawDb, startLiveSync, stopLiveSync } from '$lib/db';
 
 	// 1. Declaración correcta de Props en Svelte 5
-	let { username = '', onDatabaseHashChange = () => {} } = $props();
+	let { username = '', onDatabaseHashChange = () => {}, toggleSidebar = () => {} } = $props();
 
 	let databases = $state([]);
 	let activeDatabaseId = $state('');
@@ -137,7 +137,11 @@
 
 <nav aria-label="Breadcrumb" class="breadcrumbs no-print">
 	<div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
-		<a href="/" style="font-weight: bold;">{m.app_name()}</a>
+		<button class="menu-toggle" onclick={toggleSidebar}>
+			<SvgIcon path={mdiMenu} type="mdi" size="1.5em" />
+		</button>
+		<a class="short-name" href="/" style="font-weight: bold;">{m.app_name_short()}</a>
+		<a class="long-name" href="/" style="font-weight: bold;">{m.app_name()}</a>
 	</div>
 	<div
 		style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap; justify-content: flex-end;"
@@ -193,10 +197,28 @@
 		gap: 5px;
 		flex-wrap: wrap;
 	}
-	@media (prefers-color-scheme: dark) {
+	/* @media (prefers-color-scheme: dark) {
 		.language-switcher-container,
 		.database-switcher-container {
 			color: white;
 		}
+	} */
+	.short-name {
+		display: none;
+	}
+	@media (max-width: 700px) {
+		.short-name {
+			display: block;
+		}
+		.long-name {
+			display: none;
+		}
+	}
+	.menu-toggle {
+		background: transparent;
+		border: none;
+		color: white;
+		cursor: pointer;
+		padding: 0 2.5px;
 	}
 </style>

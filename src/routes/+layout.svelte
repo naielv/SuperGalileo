@@ -16,16 +16,44 @@
 		mdiStar,
 		mdiQrcodeScan,
 		mdiCog,
-		mdiNotebook
+		mdiNotebook,
+
+		mdiHome
+
 	} from '@mdi/js';
 	let { children } = $props();
 	let sidebar_open = $state(window.innerWidth >= 768);
+	
+	function onMenuLinkClick() {
+		// If sidebar is open and the screen width is less than 768px, close the sidebar
+		if (sidebar_open && window.innerWidth < 768) {
+			sidebar_open = false;
+		}
+	}
+	// Listen to click events on the sidebar .apps container to close the sidebar when a link is clicked
+	document.addEventListener('click', (event) => {
+		const sidebarApps = document.querySelector('.sidebar .apps');
+		if (sidebarApps && sidebarApps.contains(event.target)) {
+			onMenuLinkClick();
+		}
+	});
+
+	// Listen for window resize events to automatically open/close the sidebar based on screen width
+	function handleResize() {
+		if (window.innerWidth >= 768) {
+			sidebar_open = true;
+		} else {
+			sidebar_open = false;
+		}
+	}
+	window.addEventListener('resize', handleResize);
+
 	let currentSyncRandomInt = $state(null);
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
 
-<div class="shell" style:--accent={currentSyncRandomInt === null ? "black" : `hsl(${currentSyncRandomInt}deg 40% 30%)`}>
+<div class="shell" class:sidebarOpen={sidebar_open} style:--accent={currentSyncRandomInt === null ? "black" : `hsl(${currentSyncRandomInt}deg 40% 30%)`}>
 	<Header
 		onDatabaseHashChange={(hash) => {
 			currentSyncRandomInt = hash * 2.75 % 360;
@@ -39,6 +67,7 @@
 		{#if sidebar_open}
 			<aside class="sidebar no-print">
 				<div class="apps">
+					<SidebarButton href="/" icon={mdiHome} label={m.home_index()} />
 					<!-- <SidebarButton background="darkred" href="/cuenta" icon={mdiLogin} label={m.cuenta()} /> -->
 					<SidebarButton href="/people" icon={mdiAccountGroup} label={m.people()} />
 					<!-- <SidebarButton background="darkred" href="/classroom_management" icon={mdiSchool} label={m.classroom_management()} /> -->
@@ -94,6 +123,17 @@
 	@media (max-width: 768px) {
 		.shell .sidebar {
 			width: 200px;
+		}
+		.shell.sidebarOpen section.content {
+			display: none;
+		}
+		.shell.sidebarOpen .sidebar {
+			width: 100%;
+		}
+		.shell.sidebarOpen .sidebar .apps {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+			gap: 10px;
 		}
 	}
 	@media (prefers-reduced-motion: reduce) {

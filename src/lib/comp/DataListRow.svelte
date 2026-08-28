@@ -56,7 +56,10 @@
 
 	.row-icon {
 		display: flex;
-		align-items: flex-start;
+        flex-direction: column;
+		align-items: center;
+        max-width: 75px;
+        text-align: center;
 		justify-content: center;
 		min-width: 70px;
 		border-right: 1px solid #cbd5e1;

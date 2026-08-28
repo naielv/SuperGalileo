@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { getActiveDb } from '$lib/db';
-	import { mdiCog, mdiCoffee, mdiDelete, mdiPlus, mdiMonitor } from '@mdi/js';
+	import { mdiCog, mdiCoffee, mdiDelete, mdiPlus, mdiMonitor, mdiPencil } from '@mdi/js';
 	import SvgIcon from '@jamescoyle/svelte-icon';
 	import LinkButton from '$lib/comp/buttons/LinkButton.svelte';
 	import DataTable from '$lib/comp/DataTable.svelte';
@@ -13,6 +13,8 @@
 		calculateOrderPrice,
 		parseOrder
 	} from '$lib/coffee';
+	import { getLocale } from '$lib/paraglide/runtime';
+	import genericAvatar from '$lib/assets/user_generic.png';
 
 	let dbInstance = $state(null);
 	let people = $state({});
@@ -94,10 +96,26 @@
 
 	function orderSummary(order) {
 		const parsed = parseOrder(order.Comanda);
-		return (
-			[parsed.Selección, parsed.Tamaño, parsed.Temperatura].filter(Boolean).join(' · ') ||
-			'Sin detalle'
-		);
+		return [parsed.Selección].filter(Boolean).join(', ') || 'Sin detalle';
+	}
+
+	function formatDate(dateString) {
+		if (!dateString) return '';
+		const date = new Date(dateString);
+		const now = new Date();
+
+		// Si es el año actual, definimos manualmente solo mes y día
+		if (date.getFullYear() === now.getFullYear()) {
+			return date.toLocaleString(getLocale(), {
+				month: 'short', // Equivalente al estilo 'medium' (ej: "26 may" o "May 26")
+				day: 'numeric'
+			});
+		}
+
+		// Si es un año diferente, usamos el estilo mediano estándar (incluye el año)
+		return date.toLocaleString(getLocale(), {
+			dateStyle: 'medium'
+		});
 	}
 
 	onMount(() => {
@@ -124,76 +142,91 @@
 
 <svelte:head><title>Cafetería</title></svelte:head>
 
-<h1><SvgIcon path={mdiCoffee} type="mdi" size="1.2em" /> Cafetería</h1>
-<main>
-	{#if feedback.message}<p class="status-banner {feedback.type}">{feedback.message}</p>{/if}
-	{#if dbInstance}
-		<div class="toolbar">
-			<LinkButton
-				href="/coffee_shop/_new"
-				icon={mdiPlus}
-				label="Nueva comanda"
-				background="#2a4f90"
-			/>
-			<LinkButton href="/settings/app" icon={mdiCog} label="Precios" />
-			<LinkButton href="/coffee_shop/_kitchen" icon={mdiMonitor} label="Pantalla Cocina" />
-		</div>
+{#if feedback.message}<p class="status-banner {feedback.type}">{feedback.message}</p>{/if}
+{#if dbInstance}
+<div class="flex-header">
+	<h1>Cafetería</h1>
+	<div class="top-actions">
+		<LinkButton
+			href="/coffee_shop/_new"
+			icon={mdiPlus}
+			label="Nueva comanda"
+			background="#2a4f90"
+		/>
+		<LinkButton href="/settings/app" icon={mdiCog} label="Precios" />
+		<LinkButton href="/coffee_shop/_kitchen" icon={mdiMonitor} label="Pantalla Cocina" />
+	</div>
+</div>
 
-		<DataTable
-			{dbInstance}
-			startkey={COFFEE_PREFIX}
-			endkey={`${COFFEE_PREFIX}\uffff`}
-			{columns}
-			{searchFields}
-			{filterFields}
-			{sortByFields}
-		>
-			{#snippet rowSnippet(order)}
-				<DataListRow>
-					{#snippet icon()}
-						<SvgIcon path={mdiCoffee} type="mdi" size="2em" />
-					{/snippet}
-					{#snippet content()}
-					<div class="data-list-cell" role="cell">{order.Fecha || '-'}</div>
-					<div class="data-list-cell" role="cell"><b>{personName(order)}</b></div>
-					<div class="data-list-cell" role="cell"><span>{orderSummary(order)}</span></div>
-					<div class="data-list-cell" role="cell">
-						<select
-							value={order.Estado || 'Pedido'}
-							onchange={(event) => updateState(order, event.currentTarget.value)}
-						>
-							{#each ORDER_STATES as state}<option value={state}>{state}</option>{/each}
-						</select>
+	<DataTable
+		{dbInstance}
+		startkey={COFFEE_PREFIX}
+		endkey={`${COFFEE_PREFIX}\uffff`}
+		{columns}
+		{searchFields}
+		{filterFields}
+		{sortByFields}
+	>
+		{#snippet rowSnippet(order)}
+			<DataListRow>
+				{#snippet icon()}
+					{#await dbInstance.get( order.Persona.startsWith('personas:') ? order.Persona : `personas:${order.Persona}`, { attachments: true } ) then persona}
+						{#if persona._attachments && persona._attachments.foto && persona._attachments.foto.data}
+							<img
+								src={'data:' +
+									persona._attachments.foto.content_type +
+									';base64,' +
+									persona._attachments.foto.data}
+								alt={persona.data.Nombre || 'Desconocido'}
+								width="70"
+							/>
+						{:else}
+							<img src={genericAvatar} alt={persona.data.Nombre || 'Desconocido'} width="70" />
+						{/if}
+					{:catch error}
+						<SvgIcon path={mdiPencil} type="mdi" size="70px" />
+					{/await}
+					<b>{personName(order)}</b>
+				{/snippet}
+				{#snippet content()}
+					<div class="dl-field" role="cell">
+						<small>Fecha</small>
+						{formatDate(order.Fecha) || '-'}
 					</div>
-					<div class="data-list-cell" role="cell"
-						>{(calculateOrderPrice(parseOrder(order.Comanda), prices) / 100).toFixed(2)} €</div
+					<div class="dl-field" role="cell">
+						<small>Comanda</small>
+						<span>{orderSummary(order)}</span>
+					</div>
+					<div class="dl-field" role="cell">
+						<small>Precio</small>
+						{(calculateOrderPrice(parseOrder(order.Comanda), prices) / 100).toFixed(2)} €
+					</div>
+				{/snippet}
+				{#snippet actions()}
+					<a
+						class="button mini-btn"
+						href={`/coffee_shop/${encodeURIComponent(order._id.replace(COFFEE_PREFIX, ''))}`}
+						aria-label="Editar comanda"
 					>
-					{/snippet}
-					{#snippet actions()}
-					<div class="data-list-cell actions" role="cell">
-						<a
-							class="button mini-btn"
-							href={`/coffee_shop/${encodeURIComponent(order._id.replace(COFFEE_PREFIX, ''))}`}
-							aria-label="Editar comanda">Editar</a
-						>
-						<button
-							class="button danger mini-btn"
-							onclick={() => deleteOrder(order)}
-							aria-label="Eliminar comanda"
-							><SvgIcon path={mdiDelete} type="mdi" size="1.1em" /></button
-						>
-					</div>
-					{/snippet}
-				</DataListRow>
-			{/snippet}
-		</DataTable>
-	{:else}
-		<div class="no-db-warning">
-			Configura una base de datos activa en <a href="/settings/database">Ajustes de Base de Datos</a
-			>.
-		</div>
-	{/if}
-</main>
+						<SvgIcon path={mdiPencil} type="mdi" size="1.1em" />
+					</a>
+					<button
+						class="button danger mini-btn"
+						onclick={() => deleteOrder(order)}
+						aria-label="Eliminar comanda"
+					>
+						<SvgIcon path={mdiDelete} type="mdi" size="1.1em" />
+					</button>
+				{/snippet}
+			</DataListRow>
+		{/snippet}
+	</DataTable>
+{:else}
+	<div class="no-db-warning">
+		Configura una base de datos activa en
+		<a href="/settings/database"> Ajustes de Base de Datos </a>.
+	</div>
+{/if}
 
 <style>
 	.toolbar {
