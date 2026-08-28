@@ -20,5 +20,6 @@ download:
       sort: "LEXICOGRAPHICAL"
       options:
         - "EXCLUDE_DEPRECATED_KEYS"
+        - "ONLY_TRANSLATED"
 
 pull-request:
