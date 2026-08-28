@@ -430,21 +430,6 @@
 		font-size: 18px;
 		text-align: center;
 	}
-	:global(.dl-field) {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 2px;
-	}
-	:global(.dl-field small) {
-		font-size: 13px;
-		color: #444;
-		font-weight: lighter;
-	}
-	:global(.dl-field a) {
-		color: inherit;
-		text-decoration: none;
-	}
 
 	.th-content {
 		display: flex;

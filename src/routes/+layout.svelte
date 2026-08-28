@@ -17,13 +17,11 @@
 		mdiQrcodeScan,
 		mdiCog,
 		mdiNotebook,
-
 		mdiHome
-
 	} from '@mdi/js';
 	let { children } = $props();
 	let sidebar_open = $state(window.innerWidth >= 768);
-	
+
 	function onMenuLinkClick() {
 		// If sidebar is open and the screen width is less than 768px, close the sidebar
 		if (sidebar_open && window.innerWidth < 768) {
@@ -56,11 +54,18 @@
 	<title>{m.app_name()}</title>
 </svelte:head>
 
-<div class="shell" class:sidebarOpen={sidebar_open} style:--accent={currentSyncRandomInt === null ? "black" : `hsl(${currentSyncRandomInt}deg 40% 30%)`}>
+<div
+	class="shell"
+	class:sidebarOpen={sidebar_open}
+	style:--accent={currentSyncRandomInt === null
+		? 'black'
+		: `hsl(${currentSyncRandomInt}deg 40% 30%)`}
+>
 	<Header
 		onDatabaseHashChange={(hash) => {
-			currentSyncRandomInt = hash * 2.75 % 360;
-			console.log('Database hash changed:', hash, 'Random int:', currentSyncRandomInt);
+			var multiplier = 8
+			currentSyncRandomInt = (hash * multiplier) % 360;
+			console.debug("Hue Change", {level: hash, hue: currentSyncRandomInt, multiplier: multiplier})
 		}}
 		toggleSidebar={() => {
 			sidebar_open = !sidebar_open;

@@ -11,6 +11,7 @@
 
 	let databases = $state([]);
 	let activeDatabaseId = $state('');
+	const sharedColorDocumentId = 'galileo_shared_color';
 
 	function loadDatabases() {
 		try {
@@ -50,7 +51,7 @@
 		onDatabaseHashChange(getChangeHash(value));
 	}
 
-	async function notifyCurrentDatabaseHash() {
+	async function notifySharedDatabaseColor() {
 		const config = getActiveDbConfig();
 		if (!config) {
 			notifyDatabaseHash('');
@@ -58,10 +59,46 @@
 		}
 
 		try {
-			const info = await getLocalRawDb(config.localDatabase).info();
-			notifyDatabaseHash(info.update_seq);
-		} catch {
-			notifyDatabaseHash(config.localDatabase);
+			const colorDocument = await getLocalRawDb(config.localDatabase).get(sharedColorDocumentId);
+			notifyDatabaseHash(colorDocument.hue);
+		} catch (error) {
+			if (error.status !== 404) {
+				notifyDatabaseHash(0);
+				return;
+			}
+
+			const hue = Math.random() * 360;
+			try {
+				await getLocalRawDb(config.localDatabase).put({
+					_id: sharedColorDocumentId,
+					hue
+				});
+				notifyDatabaseHash(hue);
+			} catch (putError) {
+				if (putError.status === 409) {
+					const colorDocument = await getLocalRawDb(config.localDatabase).get(
+						sharedColorDocumentId
+					);
+					notifyDatabaseHash(colorDocument.hue);
+				}
+			}
+		}
+	}
+
+	async function advanceSharedDatabaseColor() {
+		const config = getActiveDbConfig();
+		if (!config) return;
+
+		try {
+			const db = getLocalRawDb(config.localDatabase);
+			const colorDocument = await db.get(sharedColorDocumentId);
+			const hue = Number(colorDocument.hue) + 1;
+			await db.put({ ...colorDocument, hue });
+			notifyDatabaseHash(hue);
+		} catch (error) {
+			if (error.status === 409) {
+				notifySharedDatabaseColor();
+			}
 		}
 	}
 
@@ -74,7 +111,17 @@
 
 		startLiveSync(config, {
 			onChange: (event) => {
-				notifyDatabaseHash(event?.change?.last_seq ?? event?.last_seq ?? event?.change?.seq);
+				const documents = event?.change?.docs ?? [];
+				const colorDocument = documents.find((document) => document._id === sharedColorDocumentId);
+				if (colorDocument) {
+					notifyDatabaseHash(colorDocument.hue);
+				}
+				if (
+					event?.direction === 'push' &&
+					documents.some((document) => document._id !== sharedColorDocumentId)
+				) {
+					advanceSharedDatabaseColor();
+				}
 			},
 			onError: (err) => console.warn('LiveSync error:', err)
 		});
@@ -94,7 +141,7 @@
 		const newId = e.target.value;
 		activeDatabaseId = newId;
 		localStorage.setItem('active_database_id', newId);
-		notifyCurrentDatabaseHash();
+		notifySharedDatabaseColor();
 
 		// Start sync for the new database
 		startSyncForActiveDb();
@@ -106,7 +153,7 @@
 	onMount(() => {
 		loadDatabases();
 		startSyncForActiveDb();
-		notifyCurrentDatabaseHash();
+		notifySharedDatabaseColor();
 
 		// Listen to storage changes (e.g. if databases are added/removed in settings)
 		const handleStorage = (e) => {

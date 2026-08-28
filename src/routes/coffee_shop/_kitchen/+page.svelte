@@ -5,6 +5,7 @@
 	import SvgIcon from '@jamescoyle/svelte-icon';
 	import CoffeeOrderLayers from '$lib/comp/coffee/CoffeeOrderLayers.svelte';
 	import { COFFEE_PREFIX, ORDER_STATES, parseOrder } from '$lib/coffee';
+	import { m } from '$lib/paraglide/messages';
 
 	let dbInstance = $state(null);
 	let orders = $state([]);
@@ -223,15 +224,15 @@
                             <a
                                 class="icon-button"
                                 href={`/coffee_shop/${encodeURIComponent(order._id.replace(COFFEE_PREFIX, ''))}`}
-                                aria-label="Editar comanda"
-                                title="Editar comanda"><SvgIcon path={mdiPencil} type="mdi" size="1.1em" /></a
+                                aria-label={m.edit()}
+                                title={m.edit()}><SvgIcon path={mdiPencil} type="mdi" size="1.1em" /></a
                             >
                             <button
                                 class="icon-button danger"
                                 type="button"
                                 onclick={() => deleteOrder(order)}
-                                aria-label="Eliminar comanda"
-                                title="Eliminar comanda"
+                                aria-label={m.delete()}
+                                title={m.delete()}
                                 ><SvgIcon path={mdiDelete} type="mdi" size="1.1em" /></button
                             >
                         </div>

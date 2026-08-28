@@ -274,10 +274,10 @@
                         <td>
                             <div class="actions">
                                 <button class="mini" onclick={() => editRecord(doc)}>
-                                    <SvgIcon path={mdiPencil} type="mdi" size="1em" /> Editar
+                                    <SvgIcon path={mdiPencil} type="mdi" size="1em" />
                                 </button>
                                 <button class="mini danger" onclick={() => deleteRecord(doc)}>
-                                    <SvgIcon path={mdiDelete} type="mdi" size="1em" /> Eliminar
+                                    <SvgIcon path={mdiDelete} type="mdi" size="1em" />
                                 </button>
                             </div>
                         </td>

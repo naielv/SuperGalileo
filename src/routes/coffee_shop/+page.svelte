@@ -206,14 +206,14 @@
 					<a
 						class="button mini-btn"
 						href={`/coffee_shop/${encodeURIComponent(order._id.replace(COFFEE_PREFIX, ''))}`}
-						aria-label="Editar comanda"
+						aria-label={m.edit()}
 					>
 						<SvgIcon path={mdiPencil} type="mdi" size="1.75em" />
 					</a>
 					<button
 						class="button danger mini-btn"
 						onclick={() => deleteOrder(order)}
-						aria-label="Eliminar comanda"
+						aria-label={m.delete()}
 					>
 						<SvgIcon path={mdiDelete} type="mdi" size="1.75em" />
 					</button>

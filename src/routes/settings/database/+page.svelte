@@ -2,14 +2,18 @@
 	import FormSubmitButton from '$lib/comp/buttons/FormSubmitButton.svelte';
 	import LinkButton from '$lib/comp/buttons/LinkButton.svelte';
 	import SvgIcon from '@jamescoyle/svelte-icon';
-	import { mdiDatabase, mdiDelete, mdiPencil, mdiSync } from '@mdi/js';
-	import { onMount } from 'svelte';
 	import {
-		compactLocalDb,
-		syncOnce,
-		testLocalDb,
-		testRemoteDb
-	} from '$lib/db';
+		mdiArrowCollapse,
+		mdiDatabase,
+		mdiDelete,
+		mdiHelpNetwork,
+		mdiPencil,
+		mdiSync,
+		mdiTestTube
+	} from '@mdi/js';
+	import { onMount } from 'svelte';
+	import { compactLocalDb, syncOnce, testLocalDb, testRemoteDb } from '$lib/db';
+	import { m } from '$lib/paraglide/messages';
 
 	const STORAGE_KEY = 'pouchdb_connections_v1';
 
@@ -328,8 +332,16 @@
 	});
 </script>
 
-<h1>Ajustes: Base de datos</h1>
-<h2 style="margin-bottom: 0;">Gestion PouchDB y sincronizacion offline-first</h2>
+<div class="flex-header">
+	<h1>Ajustes: Base de datos</h1>
+	<div class="top-actions">
+		<LinkButton
+			href="/settings/database/test"
+			icon={mdiDatabase}
+			label="Ver registros"
+		/>
+	</div>
+</div>
 <main>
 	<p class="status-banner {online ? 'ok' : 'warning'}">
 		{online ? 'Conectado a internet' : 'Sin internet: datos locales disponibles'}
@@ -337,108 +349,105 @@
 	{#if feedback.message}
 		<p class="status-banner {feedback.type}">{feedback.message}</p>
 	{/if}
-
-	<div style="margin-bottom: 20px; display: flex; justify-content: flex-end;">
-		<LinkButton
-			href="/settings/database/test"
-			icon={mdiDatabase}
-			label="Ver registros"
-			background="#2a4f90"
-		/>
-	</div>
-
-	<h3>Bases registradas</h3>
-	{#if databases.length > 0}
-		<table>
-			<thead>
-				<tr>
-					<th>Nombre</th>
-					<th>Local</th>
-					<th>Remota</th>
-					<th>Sync</th>
-					<th>Estado</th>
-					<th>Acciones</th>
-				</tr>
-			</thead>
-			<tbody>
-				{#each databases as db}
-					<tr>
-						<td>{db.name}</td>
-						<td>{db.localDatabase}</td>
-						<td
-							>{db.serverUrl && db.remoteDatabase
-								? `${db.serverUrl}/${db.remoteDatabase}`
-								: '-'}</td
-						>
-						<td>
-							<label class="inline-check">
-								<input
-									type="checkbox"
-									checked={db.syncEnabled}
-									onchange={() => toggleSyncEnabled(db)}
-								/>
-								<span>{db.syncEnabled ? 'Habilitado' : 'Deshabilitado'}</span>
-							</label>
-						</td>
-						<td>
-							<div>{db.lastStatus}</div>
-							{#if db.lastSyncAt}
-								<small>Ultimo sync: {new Date(db.lastSyncAt).toLocaleString()}</small>
-							{/if}
-							{#if db.lastError}
-								<small class="error-text">{db.lastError}</small>
-							{/if}
-						</td>
-						<td>
-							<div class="actions">
-								<button class="mini" onclick={() => runTestLocal(db)} disabled={busyById[db.id]}>
-									Probar local
-								</button>
-								<button
-									class="mini"
-									onclick={() => runCompactLocal(db)}
-									disabled={busyById[db.id]}
-								>
-									Compactar local
-								</button>
-								<button class="mini" onclick={() => runTestRemote(db)} disabled={busyById[db.id]}>
-									Probar remota
-								</button>
-								<button
-									class="mini"
-									onclick={() => runSyncOnce(db)}
-									disabled={busyById[db.id] || !db.syncEnabled}
-								>
-									<SvgIcon path={mdiSync} type="mdi" size="1.1em" /> Sync ahora
-								</button>
-								<button
-									class="icon-btn"
-									onclick={() => editDatabase(db)}
-									title="Editar"
-									aria-label="Editar"
-								>
-									<SvgIcon path={mdiPencil} type="mdi" size="1.3em" />
-								</button>
-								<button
-									class="icon-btn danger"
-									onclick={() => removeDatabase(db)}
-									title="Eliminar"
-									aria-label="Eliminar"
-								>
-									<SvgIcon path={mdiDelete} type="mdi" size="1.5em" />
-								</button>
-							</div>
-						</td>
-					</tr>
-				{/each}
-			</tbody>
-		</table>
-	{:else}
-		<p>No hay bases de datos conectadas.</p>
-	{/if}
 </main>
+
+<h3>Bases registradas</h3>
+{#if databases.length > 0}
+	<table>
+		<thead>
+			<tr>
+				<th>Nombre</th>
+				<th>Remota</th>
+				<th>Sync</th>
+				<th class="hs">Estado</th>
+				<th>Acciones</th>
+			</tr>
+		</thead>
+		<tbody>
+			{#each databases as db}
+				<tr>
+					<td class="dl-field" style="width: 200px;">
+						{db.name}
+						<small>{db.localDatabase}</small>
+					</td>
+					<td class="dl-field" style="width: 200px;">
+						{db.remoteDatabase ? `${db.remoteDatabase}` : '-'}
+						<small>{db.serverUrl ? `${db.serverUrl}` : '-'}</small>
+					</td>
+					<td class="dl-field" style="width: 45px; padding: 0;">
+						<input
+							type="checkbox"
+							style="width: 40px; margin: 0; vertical-align: middle;"
+							checked={db.syncEnabled}
+							onchange={() => toggleSyncEnabled(db)}
+						/>
+					</td>
+					<td class="dl-field hs" style="width: auto;">
+						<b>{db.lastStatus}</b>
+						{#if db.lastSyncAt}
+							<small>Ultimo sync: {new Date(db.lastSyncAt).toLocaleString()}</small>
+						{/if}
+						{#if db.lastError}
+							<small class="error-text">{db.lastError}</small>
+						{/if}
+					</td>
+					<td style="width: 100px; padding: 0;">
+						<div class="actions">
+							<button
+								class="button hs mini-btn accent"
+								onclick={() => runTestLocal(db)}
+								disabled={busyById[db.id]}
+							>
+								<SvgIcon path={mdiTestTube} type="mdi" size="1.75em" />
+							</button>
+							<button
+								class="button hs mini-btn accent"
+								onclick={() => runTestRemote(db)}
+								disabled={busyById[db.id]}
+							>
+								<SvgIcon path={mdiHelpNetwork} type="mdi" size="1.75em" />
+							</button>
+							<button
+								class="button mini-btn accent"
+								onclick={() => runCompactLocal(db)}
+								disabled={busyById[db.id]}
+							>
+								<SvgIcon path={mdiArrowCollapse} type="mdi" size="1.75em" />
+							</button>
+							<button
+								class="button mini-btn accent"
+								onclick={() => runSyncOnce(db)}
+								disabled={busyById[db.id] || !db.syncEnabled}
+							>
+								<SvgIcon path={mdiSync} type="mdi" size="1.75em" />
+							</button>
+							<button
+								class="button mini-btn"
+								onclick={() => editDatabase(db)}
+								title={m.edit()}
+								aria-label={m.edit()}
+							>
+								<SvgIcon path={mdiPencil} type="mdi" size="1.75em" />
+							</button>
+							<button
+								class="button mini-btn danger"
+								onclick={() => removeDatabase(db)}
+								title={m.delete()}
+								aria-label={m.delete()}
+							>
+								<SvgIcon path={mdiDelete} type="mdi" size="1.75em" />
+							</button>
+						</div>
+					</td>
+				</tr>
+			{/each}
+		</tbody>
+	</table>
+{:else}
+	<p>No hay bases de datos conectadas.</p>
+{/if}
 <hr />
-<h2>{editingId ? 'Editar base de datos' : 'Añadir base de datos'}</h2>
+<h2>{editingId ? m.edit_wname({ name: m.database }) : m.add_wname({ name: m.database() })}</h2>
 <main>
 	<form onsubmit={submitForm}>
 		<fieldset>
@@ -451,7 +460,12 @@
 			</label>
 			<label>
 				<b>Base local PouchDB:</b>
-				<input type="text" bind:value={form.localDatabase} placeholder="supergalileo_local" required />
+				<input
+					type="text"
+					bind:value={form.localDatabase}
+					placeholder="supergalileo_local"
+					required
+				/>
 			</label>
 			<label>
 				<b>Servidor remoto (opcional):</b>
@@ -520,16 +534,22 @@
 		display: flex;
 		align-items: center;
 		gap: 8px;
+		margin: 0;
 	}
 
 	.inline-check input {
 		width: auto;
+		height: 20px;
+		width: 20px;
+		margin: 0;
 	}
 
 	.actions {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 6px;
+		gap: 1px;
+		width: 100%;
+		justify-content: center;
 	}
 
 	.mini {
@@ -538,16 +558,6 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 4px;
-	}
-
-	.icon-btn {
-		background: #2a4f90;
-		padding: 6px;
-		border-radius: 4px;
-	}
-
-	.icon-btn.danger {
-		background: #9f1a1a;
 	}
 
 	.error-text {
@@ -569,4 +579,11 @@
 		align-items: center;
 		flex-wrap: wrap;
 	}
+
+	@media (max-width: 700px) {
+		.hs {
+			display: none;
+		}
+	}
+
 </style>
