@@ -263,7 +263,14 @@ export function getLocalRawDb(localDatabase) {
 	}
 
 	if (!localRawDbCache.has(dbName)) {
-		localRawDbCache.set(dbName, new PouchDB(dbName));
+		localRawDbCache.set(
+			dbName,
+			new PouchDB(dbName, {
+				auto_compaction: true, // Enable auto-compaction to reduce database size
+				revs_limit: 5, // Limit the number of document revisions to keep, reducing database size
+				size: 50 // Set a size request for the database (in MB) so that Safari requests permission now, not later.
+			})
+		);
 	}
 
 	return localRawDbCache.get(dbName);
