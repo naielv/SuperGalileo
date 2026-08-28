@@ -2,6 +2,7 @@
   "activities": "Jarduerak",
   "add_note": "Oharra Gehitu",
   "add_person": "Pertsona Gehitu",
+  "add_wname": "Gehitu: {name}",
   "admin": "Admin",
   "almonds": "Almendra",
   "app_name": "SuperGalileo",
