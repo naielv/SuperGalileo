@@ -39,7 +39,7 @@
   "db_load_error": "Errorea datu basea kargatzean: {error}",
   "db_no_active": "Ez dago aktibo hautatutako datu baseik.",
   "db_not_connected_to_any": "Ez zaude inolako datu basearekin konektatuta.",
-  "debt": "Zorra",
+  "debt": "Zorrak",
   "delete": "Ezabatu",
   "delete_error": "Errorea {name} ezabatzean: {error}",
   "delete_success": "{name} arrakastaz ezabatu da.",
@@ -117,7 +117,7 @@
   "sort_by": "Ordenatu {field} arabera",
   "status": "Egoera",
   "stevia_droplet": "Stevia (Tantakak)",
-  "stevia_pill": "Stebia (Pilulak)",
+  "stevia_pill": "Stevia (Pilulak)",
   "supercafe_access": "SuperCafé Sarbidea",
   "supercafe_edit": "Komandak Editatu",
   "sweetner": "Gozogarria",
@@ -137,7 +137,7 @@
   "weather_location_info": "Kokapena (Eskualdea/Hiria/Posta Kodea, Herrialdea)",
   "weather_location_placeholder": "Bilbo, ES",
   "white_sugar": "Azukre Zuri",
-  "with": "ekin",
+  "with": "-rekin",
   "without": "Gabe",
   "yes": "Bai"
 }
