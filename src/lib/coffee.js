@@ -21,7 +21,7 @@ function option(value, label, ...icons) {
 }
 
 export const ORDER_OPTIONS = {
-	Selección: {
+	[m.selection()]: {
 		icon: '/static/ico/preferences.png',
 		options: [
 			option('Solo Leche', m.coffee_only_milk(), '/static/ico/milk.png'),
@@ -47,14 +47,14 @@ export const ORDER_OPTIONS = {
 			option('Infusión', m.infusion(), '/static/ico/tea_bag.png')
 		]
 	},
-	Tamaño: {
+	[m.size()]: {
 		icon: '/static/ico/sizes.png',
 		options: [
 			option('Grande', m.big(), '/static/ico/keyboard_key_g.png'),
 			option('Pequeño', m.small(), '/static/ico/keyboard_key_p.png')
 		]
 	},
-	Temperatura: {
+	[m.temperature()]: {
 		icon: '/static/ico/thermometer2.png',
 		options: [
 			option('Caliente', m.hot(), '/static/ico/arrow_up_red.png', '/static/ico/fire.png'),
@@ -67,7 +67,7 @@ export const ORDER_OPTIONS = {
 			option('Frio', m.cold(), '/static/ico/arrow_down_blue.png', '/static/ico/snowflake.png')
 		]
 	},
-	Leche: {
+	[m.milk()]: {
 		icon: '/static/ico/milk.png',
 		options: [
 			option('de Vaca', m.cowmilk(), '/static/ico/cow.png', '/static/ico/add.png'),
@@ -77,27 +77,27 @@ export const ORDER_OPTIONS = {
 			option('Agua', m.water(), '/static/ico/water_tap.png')
 		]
 	},
-	Cafeina: {
+	[m.caffeine()]: {
 		icon: '/static/ico/coffee_bean.png',
 		options: [
-			option('Con', '/static/ico/coffee_bean.png', '/static/ico/add.png'),
-			option('Sin', '/static/ico/coffee_bean.png', '/static/ico/delete.png')
+			option('Con', m.with(), '/static/ico/coffee_bean.png', '/static/ico/add.png'),
+			option('Sin', m.without(), '/static/ico/coffee_bean.png', '/static/ico/delete.png')
 		]
 	},
-	Endulzante: {
+	[m.sweetner()]: {
 		icon: '/static/ico/lollipop.png',
 		options: [
-			option('Az. Blanco', '/static/ico/azucar-blanco.jpg'),
-			option('Az. Moreno', '/static/ico/azucar-moreno.png'),
-			option('Sacarina', '/static/ico/sacarina.jpg'),
-			option('Stevia (Pastillas)', '/static/ico/stevia.jpg'),
-			option('Stevia (Gotas)', '/static/ico/stevia-gotas.webp'),
-			option('Sin', '/static/ico/delete.png')
+			option('Az. Blanco', m.white_sugar(), '/static/ico/azucar-blanco.jpg'),
+			option('Az. Moreno', m.brown_sugar(), '/static/ico/azucar-moreno.png'),
+			option('Sacarina', m.saccharin(), '/static/ico/sacarina.jpg'),
+			option('Stevia (Pastillas)', m.stevia_pill(), '/static/ico/stevia.jpg'),
+			option('Stevia (Gotas)', m.stevia_droplet(), '/static/ico/stevia-gotas.webp'),
+			option('Sin', m.without(), '/static/ico/delete.png')
 		]
 	},
-	Receta: {
+	[m.recipe()]: {
 		icon: '/static/ico/cookies.png',
-		options: [option('Si', '/static/ico/add.png'), option('No', '/static/ico/delete.png')]
+		options: [option('Si', m.with(), '/static/ico/add.png'), option('No', m.without(), '/static/ico/delete.png')]
 	}
 };
 
