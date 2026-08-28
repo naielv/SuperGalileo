@@ -9,6 +9,7 @@
   "app_settings": "Ajustes generales",
   "balance": "Saldo",
   "big": "Grande",
+  "brown_sugar": "Az. Moreno",
   "caffeine": "Cafeina",
   "cancel": "Cancelar",
   "classroom_management": "Gestión del Aula",
@@ -69,6 +70,7 @@
   "new_coffee_order": "Nueva Comanda",
   "new_note": "Nueva Nota",
   "new_person": "Nueva Persona",
+  "no": "No",
   "no_data": "No hay datos disponibles.",
   "no_detail": "Sin detalle",
   "no_results": "No se encontraron resultados.",
@@ -99,6 +101,7 @@
   "roles": "Roles",
   "roles_and_permissions": "Roles y Permisos",
   "roles_placeholder": "Selecciona uno o más roles en el panel lateral.",
+  "saccharin": "Sacarina",
   "save": "Guardar",
   "save_error": "Error al guardar {name}: {error}",
   "save_success": "{name} ha sido guardado.",
@@ -113,6 +116,8 @@
   "small": "Pequeño",
   "sort_by": "Ordenar por {field}",
   "status": "Estado",
+  "stevia_droplet": "Stevia (Gotas)",
+  "stevia_pill": "Stevia (Pastillas)",
   "supercafe_access": "Acceso a Cafetería",
   "supercafe_edit": "Editar Comandas",
   "sweetner": "Endulzante",
@@ -130,5 +135,9 @@
   "water": "Agua",
   "weather_location": "Ubicación para el Clima",
   "weather_location_info": "Ubicación (Región/Ciudad/CodigoPostal, País)",
-  "weather_location_placeholder": "Madrid, ES"
+  "weather_location_placeholder": "Madrid, ES",
+  "white_sugar": "Az. Blanco",
+  "with": "Con",
+  "without": "Sin",
+  "yes": "Si"
 }
