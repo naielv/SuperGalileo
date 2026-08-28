@@ -8,6 +8,7 @@
 	import FormSubmitButton from '$lib/comp/buttons/FormSubmitButton.svelte';
 	import PersonSelector from '$lib/comp/PersonSelector.svelte';
 	import ActionButton from '$lib/comp/buttons/ActionButton.svelte';
+	import { m } from '$lib/paraglide/messages';
 
 	const idParam = page.params.id;
 	const isNew = idParam === '_new';
@@ -116,7 +117,7 @@
 	<a href="/notes" class="back-link">
 		<SvgIcon path={mdiArrowLeft} type="mdi" size="1.2em" /> Volver a Notas
 	</a>
-	<h1>{isNew ? 'Nueva Nota' : `Editar: ${asunto}`}</h1>
+	<h1>{isNew ? m.new_note() : m.edit_wname({name: asunto})}</h1>
 </div>
 
 <main>

@@ -149,10 +149,9 @@
 	});
 </script>
 
-<svelte:head><title>{isNew ? 'Nueva comanda' : 'Editar comanda'} | Cafetería</title></svelte:head>
 
 <div class="flex-header">
-	<h1>{isNew ? 'Nueva comanda' : 'Editar comanda'}</h1>
+	<h1>{isNew ? m.new_coffee_order() : m.edit_wname({name: m.coffee_order()})}</h1>
 	<div class="top-actions">
 		<LinkButton href="/coffee_shop" icon={mdiArrowLeft} label={m.coffee_shop()} />
 	</div>
