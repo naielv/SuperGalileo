@@ -930,12 +930,29 @@ table .dl-field {
 
 .duoshell .recordList .title {
 	text-align: center;
-	padding: 12.5px 5px;
+	padding: 7.5px 5px;
 	border-bottom: 1px solid black;
 	margin: 0;
+	display: flex;
+    align-items: center;
+}
+.duoshell .recordList .title h3 {
+	margin: 0;
+	flex: 1;
+	font-size: 23px;
+    line-height: normal;
+}
+.duoshell .recordList .title a {
+	text-decoration: none;
+	background-color: blue;
+	color: white;
+	border-radius: 5px;
+	font-size: 17.5px;
+	padding: 5px 7.5px;
+    line-height: normal;
 }
 
-.duoshell .recordList a {
+.duoshell .recordList a.record {
 	display: flex;
 	flex-direction: row;
 	gap: 5px;
@@ -956,15 +973,15 @@ table .dl-field {
 	justify-content: space-between;
 }
 
-.duoshell .recordList a:nth-child(even) {
+.duoshell .recordList a.record:nth-child(even) {
 	background: #f4f4f4;
 }
 
-.duoshell .recordList a.active {
+.duoshell .recordList a.record.active {
 	background: #adfeda;
 }
 
-.duoshell .recordList a img {
+.duoshell .recordList a.record img {
 	width: 64px;
 	height: 64px;
 	object-fit: cover;

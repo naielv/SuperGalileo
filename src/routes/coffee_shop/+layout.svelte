@@ -253,7 +253,10 @@
 {#if db}
 	<div class="duoshell" class:collapsed={!sidebar}>
 		<div class="recordList">
-			<h3 class="title">Comandas</h3>
+			<div class="title">
+				<h3>Comandas Café</h3>
+				<a href="/coffee_shop/_new">Nuevo</a>
+			</div>
 
 			{#each records as record}
 				{@const person = getPerson(record)}
@@ -263,6 +266,7 @@
 				{@const canPay = person?.data?.Monedero_Balance >= price}
 
 				<a
+					class="record"
 					class:active={isActive}
 					href={`/coffee_shop/${personId}`}
 					style="flex-direction: column; align-items: stretch; gap: 2.5px"

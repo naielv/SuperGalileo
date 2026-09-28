@@ -156,7 +156,11 @@
 	<div class="duoshell" class:collapsed={!sidebar}>
 		
 		<div class="recordList">
-			<h3 class="title">Personas</h3>
+			<div class="title">
+				<h3>Personas</h3>
+				<a href="/people/_new">Nuevo</a>
+			</div>
+
 			{#each records.toSorted((a, b) => a.data.Region.localeCompare(b.data.Region) || a.data.Nombre.localeCompare(b.data.Nombre)) as record}
 				{@const isActive = page.params.id == record._id.split(":")[1]}
 				{@const balance = Number(record.data.Monedero_Balance)}
@@ -165,7 +169,7 @@
 					style: 'currency',
 					currency: 'EUR'
 				})}
-				<a class:active={isActive} href={'/people/' + record._id.split(':')[1]}>
+				<a class="record" class:active={isActive} href={'/people/' + record._id.split(':')[1]}>
 					{#if record._attachments?.foto}
 						{#await db.getAttachment(record._id, 'foto') then blob}
 							<img

@@ -226,7 +226,7 @@
 <style>
 	.language-switcher,
 	.database-switcher {
-		background: transparent;
+		background: var(--accent);
 		border: 1px solid #ccc;
 		border-radius: 4px;
 		color: white;

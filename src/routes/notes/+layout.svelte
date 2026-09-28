@@ -237,7 +237,10 @@
 {#if db}
 	<div class="duoshell" class:collapsed={!sidebar}>
 		<div class="recordList">
-			<h3 class="title">Notas</h3>
+			<div class="title">
+				<h3>Notas</h3>
+				<a href="/notes/_new">Nuevo</a>
+			</div>
 
 			{#each records as record}
 				{@const person = getPerson(record.data?.Autor)}
@@ -245,6 +248,7 @@
 				{@const isActive = page.params.id === record._id.split(':')[1]}
 
 				<a
+					class="record"
 					class:active={isActive}
 					href={`/notes/${record._id.split(':')[1]}`}
 					//style="flex-direction: column; align-items: stretch; gap: 2.5px"
