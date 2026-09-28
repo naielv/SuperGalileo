@@ -122,7 +122,7 @@
 				);
 			}
 		}
-			window.dispatchEvent(new CustomEvent('sidebar-closed'));
+		window.dispatchEvent(new CustomEvent('sidebar-closed'));
 	}
 
 	async function savePerson(event) {
@@ -203,15 +203,13 @@
 			const config = getActiveDbConfig();
 
 			if (!config) {
-				feedbackMessage(m.db_no_active(), 'warning');
 				return;
 			}
 
 			db = getActiveDb();
 		} catch (error) {
-			feedbackMessage(
-				m.db_load_error({ error: error.message }),
-				'error'
+			console.error(
+				m.db_load_error({ error: error.message })
 			);
 		}
 	});

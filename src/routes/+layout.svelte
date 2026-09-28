@@ -4,6 +4,7 @@
 	import SidebarButton from '$lib/comp/buttons/SidebarButton.svelte';
 	import Header from '$lib/comp/Header.svelte';
 	import { m } from '$lib/paraglide/messages';
+	import { Toaster } from 'svelte5-toaster'
 	let { children } = $props();
 
 	let currentSyncRandomInt = $state(null);
@@ -35,6 +36,7 @@
 	/>
 	<div class="row">
 		<section class="content">
+			<Toaster position="top-center" theme="light" variant="rich" stack="vertical" />
 			{@render children()}
 		</section>
 	</div>

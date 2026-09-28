@@ -1,14 +1,10 @@
 <script>
-	const PREFIX = 'supercafe';
+	const PREFIX = 'notas';
 
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 
-	import {
-		getActiveDb,
-		getActiveDbConfig,
-		decryptValue
-	} from '$lib/db';
+	import { getActiveDb, getActiveDbConfig, decryptValue } from '$lib/db';
 
 	import { m } from '$lib/paraglide/messages';
 
@@ -57,10 +53,7 @@
 			dbKey = config.encryptionKey;
 
 			await loadRecords();
-			await Promise.all([
-				loadPeople(),
-				loadPrices()
-			]);
+			await Promise.all([loadPeople()]);
 
 			startChanges();
 		} catch (error) {
@@ -95,7 +88,7 @@
 		const ids = [
 			...new Set(
 				records
-					.map((record) => record.data?.Persona)
+					.map((record) => record.data?.Autor)
 					.filter(Boolean)
 					.map((id) => `personas:${id}`)
 			)
@@ -208,21 +201,12 @@
 		}
 	}
 
-	function getPerson(record) {
-		return people.get(`personas:${record.data?.Persona}`);
+	function getPerson(personId) {
+		return people.get(`personas:${personId}`);
 	}
 
 	function getPersonId(record) {
-		return record._id.split(':', 2)[1];
-	}
-
-	function getOrderPrice(record) {
-		return (
-			calculateOrderPrice(
-				parseOrder(record.data?.Comanda),
-				prices
-			) / 100
-		).toFixed(2);
+		return record?._id.split(':', 2)[1];
 	}
 
 	function getPhotoUrl(person) {
@@ -230,7 +214,7 @@
 
 		if (!attachment?.data) return '';
 
-		return URL.createObjectURL(attachment.data)
+		return URL.createObjectURL(attachment.data);
 	}
 
 	onMount(() => {
@@ -253,18 +237,16 @@
 {#if db}
 	<div class="duoshell" class:collapsed={!sidebar}>
 		<div class="recordList">
-			<h3 class="title">Comandas</h3>
+			<h3 class="title">Notas</h3>
 
 			{#each records as record}
-				{@const person = getPerson(record)}
-				{@const personId = getPersonId(record)}
-				{@const price = getOrderPrice(record)}
-				{@const isActive = page.params.id === personId}
-				{@const canPay = person?.data?.Monedero_Balance >= price}
+				{@const person = getPerson(record.data?.Autor)}
+				{@const personId = getPersonId(person)}
+				{@const isActive = page.params.id === record._id.split(':')[1]}
 
 				<a
 					class:active={isActive}
-					href={`/coffee_shop/${personId}`}
+					href={`/notes/${record._id.split(':')[1]}`}
 					style="flex-direction: column; align-items: stretch; gap: 2.5px"
 				>
 					<div class="rowflex">
@@ -278,60 +260,16 @@
 										height="64"
 									/>
 								{/if}
-
-								<b>{person.data?.Nombre}</b>
 							</div>
 						{/if}
 
 						<div class="record-info">
-							<span>{orderSummary(record.data)}</span>
+							<span>{record.data?.Asunto}</span>
 							<small>
-								<i>{record.data?.Fecha}</i>
+								<i>{person?.data?.Nombre}</i>
 							</small>
 						</div>
-
-						<b
-							class="price"
-							style:color={canPay ? 'green' : 'red'}
-						>
-							{price} €
-						</b>
 					</div>
-					<div class="rowflex" style="justify-content: center; font-size: 25px;">
-						{#if JSON.parse(record.data.Comanda).Tamaño}
-							<b style="border-radius: 5px; border: 1px solid red; padding: 1px 3px; background: white;">{JSON.parse(record.data.Comanda).Tamaño[0]}</b>
-						{/if}
-						{#if JSON.parse(record.data.Comanda).Temperatura == "Caliente"}
-							<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white;">🔥</b>
-						{/if}
-						{#if JSON.parse(record.data.Comanda).Temperatura == "Frio"}
-							<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white;">❄️</b>
-						{/if}
-						{#if JSON.parse(record.data.Comanda).Cafeina == "Con"}
-							<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white;">⚡️</b>
-						{/if}
-						{#if JSON.parse(record.data.Comanda).Cafeina == "Sin"}
-							<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white;">🐢</b>
-						{/if}
-						{#if JSON.parse(record.data.Comanda).Endulzante != "Sin" && JSON.parse(record.data.Comanda).Endulzante != undefined}
-							<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white; font-size: 21.5px;">👀<sub>A</sub></b>
-						{/if}
-						{#if JSON.parse(record.data.Comanda).Leche == "de Vaca"}
-							<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white;">🐮</b>
-						{/if}
-
-						{#if JSON.parse(record.data.Comanda).Notas != "" && JSON.parse(record.data.Comanda).Notas != undefined}
-							<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white; font-size: 21.5px;">👀<sub>N</sub></b>
-						{/if}
-						{#if JSON.parse(record.data.Comanda).Leche != "Agua" && JSON.parse(record.data.Comanda).Leche != "de Vaca" && JSON.parse(record.data.Comanda).Endulzante != undefined}
-							<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white; font-size: 21.5px;">👀<sub>L</sub></b>
-						{/if}
-						{#if JSON.parse(record.data.Comanda).Receta == "Si"}
-							<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white;">🍪</b>
-						{/if}
-						<b style="border-radius: 5px; background: red; padding: 6px 3px; color: white; font-size: 17px;">{record.data.Estado}</b>
-					</div>
-					<!-- {record.data.Comanda} -->
 				</a>
 			{/each}
 		</div>
@@ -347,9 +285,7 @@
 			{m.db_configure_in_settings()}
 		</p>
 
-		<a href="/settings/database" class="button">
-			Ir a Ajustes de Base de Datos
-		</a>
+		<a href="/settings/database" class="button"> Ir a Ajustes de Base de Datos </a>
 	</div>
 {/if}
 

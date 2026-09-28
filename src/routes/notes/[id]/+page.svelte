@@ -9,39 +9,31 @@
 	import PersonSelector from '$lib/comp/PersonSelector.svelte';
 	import ActionButton from '$lib/comp/buttons/ActionButton.svelte';
 	import { m } from '$lib/paraglide/messages';
+	import { toast } from 'svelte5-toaster';
 
-	const idParam = page.params.id;
-	const isNew = idParam === '_new';
+	let idParam = $derived(page.params.id);
+	let isNew = $derived(idParam === '_new');
 
 	let activeDbName = $state('');
 	let dbInstance = $state(null);
-	let feedback = $state({ type: 'info', message: '' });
 
 	let asunto = $state('');
 	let contenido = $state('');
 	let autor = $state(null);
 	let rev = $state('');
 
-	function setFeedback(message, type = 'info') {
-		feedback = { type, message };
-	}
-
 	function loadActiveDatabase() {
-		try {
-			const activeDb = getActiveDbConfig();
-			dbInstance = getActiveDb();
-			if (activeDb && dbInstance) {
-				activeDbName = activeDb.localDatabase;
-				loadData();
-			} else {
-				setFeedback('No hay base de datos activa seleccionada.', 'warning');
-			}
-		} catch (e) {
-			setFeedback('Error al cargar base de datos: ' + e.message, 'error');
+		const activeDb = getActiveDbConfig();
+		dbInstance = getActiveDb();
+		if (activeDb && dbInstance) {
+			activeDbName = activeDb.localDatabase;
+			loadData();
+		} else {
+			console.warn('No hay base de datos activa seleccionada.');
 		}
 	}
 
-	async function loadData() {
+	async function loadData(idParam) {
 		if (!dbInstance) return;
 		if (isNew) return;
 
@@ -51,17 +43,18 @@
 			asunto = data.Asunto || '';
 			contenido = data.Contenido || '';
 			if (data.Autor) {
-                const personId = data.Autor.startsWith('personas:') ? data.Autor : "personas:" + data.Autor;
-                autor = { key: personId, label: personId };
+				const personId = data.Autor.startsWith('personas:') ? data.Autor : 'personas:' + data.Autor;
+				autor = { key: personId, label: personId };
 			}
 			rev = doc._rev;
 		} catch (err) {
 			if (err.status === 404) {
-				setFeedback('La nota solicitada no existe.', 'error');
+				console.error('La nota solicitada no existe.');
 			} else {
-				setFeedback('Error al cargar datos: ' + err.message, 'error');
+				console.error('Error al cargar datos: ' + err.message);
 			}
 		}
+		window.dispatchEvent(new CustomEvent('sidebar-closed'));
 	}
 
 	async function saveNote(e) {
@@ -87,10 +80,11 @@
 
 		try {
 			await dbInstance.put(payload);
-			setFeedback('Nota guardada con éxito.', 'success');
-			setTimeout(() => { goto('/notes'); }, 1000);
+			toast.success('¡Guardado!')
+			loadData(idParam);
+			//goto('/notes');
 		} catch (err) {
-			setFeedback('Error al guardar: ' + err.message, 'error');
+			toast.error('Error al guardar', {description: err.message})
 		}
 	}
 
@@ -101,105 +95,76 @@
 		try {
 			const doc = await dbInstance.get(`notas:${idParam}`);
 			await dbInstance.remove(doc);
-			setFeedback('Nota eliminada con éxito.', 'success');
-			setTimeout(() => { goto('/notes'); }, 1000);
+			toast.success('¡Borrado!')
+			goto('/notes');
 		} catch (err) {
-			setFeedback('Error al eliminar: ' + err.message, 'error');
+			toast.error('Error al eliminar', {description: err.message})
 		}
 	}
 
 	onMount(() => {
-		loadActiveDatabase();
+		try {
+			const config = getActiveDbConfig();
+
+			if (!config) {
+				return;
+			}
+
+			dbInstance = getActiveDb();
+		} catch (error) {
+			console.error(
+				m.db_load_error({ error: error.message })
+			);
+		}
+	});
+
+	$effect(() => {
+		if (dbInstance && idParam) {
+			loadData(idParam);
+		}
 	});
 </script>
 
-<div class="header-container">
-	<a href="/notes" class="back-link">
-		<SvgIcon path={mdiArrowLeft} type="mdi" size="1.2em" /> Volver a Notas
-	</a>
-	<h1>{isNew ? m.new_note() : m.edit_wname({name: asunto})}</h1>
-</div>
+{#if dbInstance}
+	<form onsubmit={saveNote}>
+		<textarea class="title" bind:value={asunto} placeholder="Título de la nota" required></textarea>
+		<textarea class="body" bind:value={contenido} placeholder="Escribe el contenido..."></textarea>
 
-<main>
-	{#if feedback.message}
-		<p class="status-banner {feedback.type}">{feedback.message}</p>
-	{/if}
-
-	{#if dbInstance}
-		<form onsubmit={saveNote}>
-			<fieldset>
-				<legend>
-					<SvgIcon path={mdiNote} type="mdi" size="1.2em" /> Datos de la Nota
-				</legend>
-
-				<PersonSelector
-                    required
-					label="Autor"
-					bind:selected={autor}
+		<div class="actions">
+			<FormSubmitButton label={'Guardar'} icon={mdiContentSave} />
+			{#if !isNew}
+				<ActionButton
+					onclick={deleteNote}
+					icon={mdiDelete}
+					label="Eliminar"
+					background="#b91c1c"
 				/>
-
-				<label>
-					<b>Asunto:</b>
-					<input type="text" bind:value={asunto} placeholder="Título de la nota" required />
-				</label>
-
-				<label>
-					<b>Contenido:</b>
-					<textarea
-						bind:value={contenido}
-						rows="20"
-						placeholder="Escribe el contenido..."
-					></textarea>
-				</label>
-			</fieldset>
-
-			<div class="form-actions">
-				<FormSubmitButton label={isNew ? 'Crear Nota' : 'Guardar Cambios'} icon={mdiContentSave} />
-				{#if !isNew}
-                    <ActionButton onclick={deleteNote} icon={mdiDelete} label="Eliminar Nota" background="#b91c1c" />
-				{/if}
-			</div>
-		</form>
-	{/if}
-</main>
+			{/if}
+		</div>
+	</form>
+{/if}
 
 <style>
-	.header-container {
-		background: darkslateblue;
-		padding: 15px;
-		color: white;
-		text-align: center;
-		position: relative;
-	}
-	.header-container h1 { background: transparent; padding: 0; margin: 0; }
-	.back-link {
-		position: absolute;
-		left: 15px;
-		top: 50%;
-		transform: translateY(-50%);
-		color: white;
-		text-decoration: none;
+	form {
+		height: 100%;
 		display: flex;
-		align-items: center;
+		flex-direction: column;
 		gap: 5px;
-		font-size: 16px;
 	}
-
-	.status-banner {
-		padding: 10px;
-		border-radius: 5px;
-		margin-bottom: 15px;
-		font-weight: bold;
+	textarea.title {
+		font-size: 22.5px;
+		padding: 4px;
+		margin: 0;
 	}
-	.status-banner.success { background: #d9f7dd; color: #124218; }
-	.status-banner.warning { background: #fff4cc; color: #5b4200; }
-	.status-banner.error { background: #ffe1e1; color: #6f1111; }
-
-	.form-actions {
+	textarea.body {
+		flex: 1;
+		margin: 0;
+	}
+	.actions {
 		display: flex;
-		gap: 10px;
-		margin-top: 20px;
-		align-items: center;
-		flex-wrap: wrap;
+		gap: 5px;
+		flex-direction: row;
+		width: 100%;
+		justify-content: space-between;
 	}
 </style>
