@@ -247,10 +247,10 @@
 				<a
 					class:active={isActive}
 					href={`/notes/${record._id.split(':')[1]}`}
-					style="flex-direction: column; align-items: stretch; gap: 2.5px"
+					//style="flex-direction: column; align-items: stretch; gap: 2.5px"
 				>
-					<div class="rowflex">
-						{#if person}
+					<!--<div class="rowflex">-->
+						{#if person && false}
 							<div style="display: flex; flex-direction: column; gap: 2.5px; text-align: center">
 								{#if person._attachments?.foto}
 									<img
@@ -263,13 +263,13 @@
 							</div>
 						{/if}
 
+						<small>
+							<i>{person?.data?.Nombre}</i>
+						</small>
 						<div class="record-info">
 							<span>{record.data?.Asunto}</span>
-							<small>
-								<i>{person?.data?.Nombre}</i>
-							</small>
 						</div>
-					</div>
+					<!--</div>-->
 				</a>
 			{/each}
 		</div>
@@ -294,95 +294,7 @@
 		padding: 0 !important;
 	}
 
-	.duoshell {
-		background-color: #ddd;
-		display: grid;
-		height: 100%;
-		grid-template-columns: auto 1fr;
-	}
-
-	.duoshell .recordList {
-		padding: 0;
-		margin: 0;
-		background-color: #ddd;
-		border-right: 1px solid black;
-		overflow-y: auto;
-	}
-
-	.duoshell .recordList .title {
-		text-align: center;
-		padding: 12.5px 5px;
-		border-bottom: 1px solid black;
-		margin: 0;
-	}
-
-	.duoshell .recordList a {
-		display: flex;
-		flex-direction: row;
-		gap: 5px;
-		align-items: center;
-		justify-content: space-between;
-		background-color: #fff;
-		color: black;
-		text-decoration: none;
-		border-bottom: 1px solid gray;
-		padding: 5px;
-	}
-	.duoshell .recordList .rowflex {
-		display: flex;
-		flex-direction: row;
-		gap: 5px;
-		align-items: center;
-		justify-content: space-between;
-	}
-
-	.duoshell .recordList a:nth-child(even) {
-		background: #f4f4f4;
-	}
-
-	.duoshell .recordList a.active {
-		background: #adfeda;
-	}
-
-	.duoshell .recordList a img {
-		width: 64px;
-		height: 64px;
-		object-fit: cover;
-		flex-shrink: 0;
-	}
-
-	.record-info {
-		display: flex;
-		flex-direction: column;
-		flex: 1;
-		text-align: center;
-	}
-
-	.duoshell .content {
-		padding: 5px;
-		background-color: #fff;
-		overflow: auto;
-	}
-
 	.no-db-warning {
 		padding: 20px;
-	}
-
-	@media (max-width: 768px) {
-		.duoshell {
-			grid-template-columns: 1fr;
-		}
-
-		.duoshell.collapsed .recordList {
-			display: none;
-		}
-
-		.duoshell.collapsed .content {
-			display: block;
-		}
-
-		.duoshell .content {
-			display: none;
-		}
 	}
 </style>
