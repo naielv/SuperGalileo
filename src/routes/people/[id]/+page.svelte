@@ -19,12 +19,12 @@
 	import FormSubmitButton from '$lib/comp/buttons/FormSubmitButton.svelte';
 	import ActionButton from '$lib/comp/buttons/ActionButton.svelte';
 	import LinkButton from '$lib/comp/buttons/LinkButton.svelte';
+	import { toast } from 'svelte5-toaster';
 
 	let id = $derived(page.params.id);
 	let isNew = $derived(id === '_new');
 
 	let db = $state(null);
-	let feedback = $state({ type: 'info', message: '' });
 
 	let nombre = $state('');
 	let region = $state('');
@@ -49,10 +49,6 @@
 		}
 	};
 
-	function feedbackMessage(message, type = 'info') {
-		feedback = { message, type };
-	}
-
 	function resetForm() {
 		nombre = '';
 		region = '';
@@ -61,7 +57,6 @@
 		markdown = '';
 		monederoBalance = 0;
 		rev = '';
-		feedback = { type: 'info', message: '' };
 	}
 
 	function toggleRole(role) {
@@ -109,16 +104,14 @@
 			rev = doc._rev;
 		} catch (error) {
 			if (error.status === 404) {
-				feedbackMessage(
+				toast.error(
 					m.load_failed({
 						error: 'La persona solicitada no existe.'
-					}),
-					'error'
+					})
 				);
 			} else {
-				feedbackMessage(
-					m.load_failed({ error: error.message }),
-					'error'
+				toast.error(
+					m.load_failed({ error: error.message })
 				);
 			}
 		}
@@ -151,19 +144,17 @@
 		try {
 			await db.put(doc);
 
-			feedbackMessage(
-				m.save_success({ name: nombre }),
-				'success'
+			toast.success(
+				m.save_success({ name: nombre })
 			);
 
 			setTimeout(() => goto('/people'), 1000);
 		} catch (error) {
-			feedbackMessage(
+			toast.error(
 				m.save_error({
 					name: nombre,
 					error: error.message
-				}),
-				'error'
+				})
 			);
 		}
 	}
@@ -181,19 +172,17 @@
 			const doc = await db.get(`personas:${id}`);
 			await db.remove(doc);
 
-			feedbackMessage(
-				m.delete_success({ name: nombre }),
-				'success'
+			toast.success(
+				m.delete_success({ name: nombre })
 			);
 
 			setTimeout(() => goto('/people'), 1000);
 		} catch (error) {
-			feedbackMessage(
+			toast.error(
 				m.delete_error({
 					name: nombre,
 					error: error.message
-				}),
-				'error'
+				})
 			);
 		}
 	}
@@ -208,7 +197,7 @@
 
 			db = getActiveDb();
 		} catch (error) {
-			console.error(
+			toast.error(
 				m.db_load_error({ error: error.message })
 			);
 		}
@@ -236,12 +225,6 @@
 </div>
 
 <main>
-	{#if feedback.message}
-		<p class="status-banner {feedback.type}">
-			{feedback.message}
-		</p>
-	{/if}
-
 	{#if db}
 		<form class="main-form" onsubmit={savePerson}>
 			<div class="form-layout">

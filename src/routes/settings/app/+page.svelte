@@ -5,10 +5,10 @@
 	import { mdiCog, mdiWeatherSunny, mdiCoffee, mdiContentSave } from '@mdi/js';
 	import { m } from '$lib/paraglide/messages';
 	import FormSubmitButton from '$lib/comp/buttons/FormSubmitButton.svelte';
+	import { toast } from 'svelte5-toaster';
 
 	let activeDbName = $state('');
 	let dbInstance = $state(null);
-	let feedback = $state({ type: 'info', message: '' });
 
 	// Config fields
 	let weatherLocation = $state('');
@@ -19,10 +19,6 @@
 		cafe: 25,
 		colacao: 25
 	});
-
-	function setFeedback(message, type = 'info') {
-		feedback = { type, message };
-	}
 
 	function loadActiveDatabase() {
 		try {
@@ -42,18 +38,17 @@
 			if (activeDb) {
 				activeDbName = activeDb.localDatabase;
 				dbInstance = getLocalDb(activeDbName);
-				setFeedback(m.db_connected_to({ name: activeDbName }), 'success');
+				toast.success(m.db_connected_to({ name: activeDbName }));
 				loadConfig();
 			} else {
 				activeDbName = '';
 				dbInstance = null;
-				setFeedback(
-					m.db_no_active(),
-					'warning'
+				toast.warning(
+					m.db_no_active()
 				);
 			}
 		} catch (e) {
-			setFeedback(m.db_load_error({ error: e.message }), 'error');
+			toast.error(m.db_load_error({ error: e.message }));
 		}
 	}
 
@@ -90,14 +85,14 @@
 				}
 			}
 		} catch (e) {
-			setFeedback(m.load_failed({ error: e.message }), 'error');
+			toast.error(m.load_failed({ error: e.message }));
 		}
 	}
 
 	async function saveConfig(e) {
 		e.preventDefault();
 		if (!dbInstance) {
-			setFeedback(m.db_no_active(), 'error');
+			toast.error(m.db_no_active());
 			return;
 		}
 
@@ -125,9 +120,9 @@
 			}
 			await dbInstance.put(preciosDoc);
 
-			setFeedback(m.save_success({ name: activeDbName }), 'success');
+			toast.success(m.save_success({ name: activeDbName }));
 		} catch (err) {
-			setFeedback(m.save_error({ error: err.message }), 'error');
+			toast.error(m.save_error({ error: err.message }));
 		}
 	}
 
@@ -151,10 +146,6 @@
 <h1>{m.app_settings()}</h1>
 
 <main>
-	{#if feedback.message}
-		<p class="status-banner {feedback.type}">{feedback.message}</p>
-	{/if}
-
 	{#if dbInstance}
 		<form onsubmit={saveConfig}>
 			<fieldset>

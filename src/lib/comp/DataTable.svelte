@@ -10,6 +10,7 @@
 		mdiChevronRight
 	} from '@mdi/js';
 	import { m } from '$lib/paraglide/messages';
+	import { toast } from 'svelte5-toaster';
 
 	// Svelte 5 Props
 	let {
@@ -31,7 +32,6 @@
 	let sortDirection = $state('asc'); // 'asc' | 'desc'
 	let groupBy = $state('');
 	let collapsedGroups = $state({});
-	let feedback = $state({ type: 'info', message: '' });
 	let loading = $state(false);
 	let changesFeed = $state(null);
 
@@ -77,7 +77,7 @@
 				onLoad(rawItems);
 			}
 		} catch (e) {
-			feedback = { type: 'error', message: m.load_failed({ error: e.message }) };
+			toast.error(m.load_failed({ error: e.message }));
 		} finally {
 			loading = false;
 		}
@@ -218,10 +218,6 @@
 </script>
 
 <div class="datatable-container">
-	{#if feedback.message}
-		<p class="status-banner {feedback.type}">{feedback.message}</p>
-	{/if}
-
 	<!-- Control Bar -->
 	<div class="control-bar">
 		<div class="search-and-filters">

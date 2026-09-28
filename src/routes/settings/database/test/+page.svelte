@@ -4,6 +4,7 @@
 	import SvgIcon from '@jamescoyle/svelte-icon';
 	import { mdiDatabase, mdiPlus, mdiDelete, mdiPencil, mdiRefresh, mdiFilter } from '@mdi/js';
 	import FormSubmitButton from '$lib/comp/buttons/FormSubmitButton.svelte';
+	import { toast } from 'svelte5-toaster';
 
 	let activeDbName = $state('');
 	let activeDbId = $state('');
@@ -18,11 +19,6 @@
 	let recordInput = $state('');
 	let contentInput = $state('{\n  "title": "Nueva tarea",\n  "completed": false\n}');
 	let editingRecordId = $state(null);
-	let feedback = $state({ type: 'info', message: '' });
-
-	function setFeedback(message, type = 'info') {
-		feedback = { type, message };
-	}
 
 	function loadActiveDatabase() {
 		try {
@@ -43,7 +39,7 @@
 				activeDbName = activeDb.localDatabase;
 				activeDbId = activeDb.id;
 				dbInstance = getLocalDb(activeDbName);
-				setFeedback(`Conectado a la base de datos local: ${activeDbName}`, 'success');
+				toast.success(`Conectado a la base de datos local: ${activeDbName}`);
 				loadRecords();
 			} else {
 				activeDbName = '';
@@ -52,13 +48,12 @@
 				records = [];
 				filteredRecords = [];
 				tables = [];
-				setFeedback(
-					'No hay ninguna base de datos activa seleccionada. Configura una en Ajustes.',
-					'warning'
+				toast.warning(
+					'No hay ninguna base de datos activa seleccionada. Configura una en Ajustes.'
 				);
 			}
 		} catch (e) {
-			setFeedback('Error al cargar la base de datos activa: ' + e.message, 'error');
+			toast.error('Error al cargar la base de datos activa: ' + e.message);
 		}
 	}
 
@@ -81,7 +76,7 @@
 			tables = Array.from(extractedTables);
 			applyFilter();
 		} catch (e) {
-			setFeedback('Error al cargar registros: ' + e.message, 'error');
+			toast.error('Error al cargar registros: ' + e.message);
 		}
 	}
 
@@ -104,7 +99,7 @@
 	async function saveRecord(e) {
 		e.preventDefault();
 		if (!dbInstance) {
-			setFeedback('No hay base de datos activa.', 'error');
+			toast.error('No hay base de datos activa.');
 			return;
 		}
 
@@ -112,7 +107,7 @@
 		try {
 			parsedContent = JSON.parse(contentInput);
 		} catch (err) {
-			setFeedback('El contenido debe ser un JSON válido.', 'error');
+			toast.error('El contenido debe ser un JSON válido.');
 			return;
 		}
 
@@ -120,7 +115,7 @@
 		const record = recordInput.trim();
 
 		if (!table || !record) {
-			setFeedback('La tabla y el registro son obligatorios.', 'warning');
+			toast.warning('La tabla y el registro son obligatorios.');
 			return;
 		}
 
@@ -136,15 +131,14 @@
 					_rev: existing._rev
 				};
 				await dbInstance.put(updatedDoc);
-				setFeedback(`Registro ${editingRecordId} actualizado con éxito.`, 'success');
+				toast.success(`Registro ${editingRecordId} actualizado con éxito.`);
 			} else {
 				// Creating new record
 				try {
 					// Check if already exists
 					await dbInstance.get(targetId);
-					setFeedback(
-						`El registro con ID "${targetId}" ya existe. Elige otro nombre de registro o edítalo.`,
-						'error'
+					toast.error(
+						`El registro con ID "${targetId}" ya existe. Elige otro nombre de registro o edítalo.`
 					);
 					return;
 				} catch (err) {
@@ -156,14 +150,14 @@
 					_id: targetId
 				};
 				await dbInstance.put(newDoc);
-				setFeedback(`Registro "${targetId}" creado con éxito.`, 'success');
+				toast.success(`Registro "${targetId}" creado con éxito.`);
 			}
 
 			// Reset form and reload
 			cancelEdit();
 			await loadRecords();
 		} catch (err) {
-			setFeedback('Error al guardar el registro: ' + err.message, 'error');
+			toast.error('Error al guardar el registro: ' + err.message);
 		}
 	}
 
@@ -195,10 +189,10 @@
 		if (!confirm(`¿Eliminar el registro "${doc._id}"?`)) return;
 		try {
 			await dbInstance.remove(doc);
-			setFeedback(`Registro "${doc._id}" eliminado.`, 'success');
+			toast.success(`Registro "${doc._id}" eliminado.`);
 			await loadRecords();
 		} catch (err) {
-			setFeedback('Error al eliminar registro: ' + err.message, 'error');
+			toast.error('Error al eliminar registro: ' + err.message);
 		}
 	}
 
@@ -221,10 +215,6 @@
 
 <h1>Prueba de PouchDB</h1>
 <h2 style="margin-bottom: 0;">Gestión de registros con IDs tipo "tabla:registro"</h2>
-
-{#if feedback.message}
-    <p class="status-banner {feedback.type}">{feedback.message}</p>
-{/if}
 
 {#if dbInstance}
     <div class="filter-bar">
@@ -358,28 +348,6 @@
 {/if}
 
 <style>
-	.status-banner {
-		padding: 10px;
-		border-radius: 5px;
-		margin-bottom: 15px;
-		font-weight: bold;
-	}
-
-	.status-banner.success {
-		background: #d9f7dd;
-		color: #124218;
-	}
-
-	.status-banner.warning {
-		background: #fff4cc;
-		color: #5b4200;
-	}
-
-	.status-banner.error {
-		background: #ffe1e1;
-		color: #6f1111;
-	}
-
 	.filter-bar {
 		display: flex;
 		justify-content: space-between;

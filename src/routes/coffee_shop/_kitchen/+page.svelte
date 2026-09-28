@@ -6,17 +6,13 @@
 	import CoffeeOrderLayers from '$lib/comp/coffee/CoffeeOrderLayers.svelte';
 	import { COFFEE_PREFIX, ORDER_STATES, parseOrder } from '$lib/coffee';
 	import { m } from '$lib/paraglide/messages';
+	import { toast } from 'svelte5-toaster';
 
 	let dbInstance = $state(null);
 	let orders = $state([]);
 	let people = $state({});
-	let feedback = $state({ type: 'info', message: '' });
 	let loading = $state(true);
 	let changesFeed = $state(null);
-
-	function setFeedback(message, type = 'info') {
-		feedback = { type, message };
-	}
 
 	function personFor(order) {
 		return people[order.Persona] || {};
@@ -75,7 +71,7 @@
 					.filter((order) => isCoffeeOrder(order._id))
 			);
 		} catch (error) {
-			setFeedback(`Error al cargar la pantalla de cocina: ${error.message}`, 'error');
+			toast.error(`Error al cargar la pantalla de cocina: ${error.message}`);
 		} finally {
 			loading = false;
 		}
@@ -113,7 +109,7 @@
 				}
 			})
 			.on('error', (error) => {
-				setFeedback(`Error en la actualización realtime: ${error.message}`, 'error');
+				toast.error(`Error en la actualización realtime: ${error.message}`);
 			});
 	}
 
@@ -122,7 +118,7 @@
 			const { _id, _rev, ...data } = order;
 			await dbInstance.put({ _id, _rev, data: { ...data, Estado: state } });
 		} catch (error) {
-			setFeedback(`Error al actualizar la comanda: ${error.message}`, 'error');
+			toast.error(`Error al actualizar la comanda: ${error.message}`);
 		}
 	}
 
@@ -131,7 +127,7 @@
 		try {
 			await dbInstance.remove({ _id: order._id, _rev: order._rev });
 		} catch (error) {
-			setFeedback(`Error al eliminar la comanda: ${error.message}`, 'error');
+			toast.error(`Error al eliminar la comanda: ${error.message}`);
 		}
 	}
 
@@ -139,13 +135,13 @@
 		const initialize = async () => {
 			try {
 				dbInstance = getActiveDb();
-				if (!dbInstance) setFeedback('No hay ninguna base de datos activa.', 'warning');
+				if (!dbInstance) toast.warning('No hay ninguna base de datos activa.');
 				else {
 					await loadData();
 					startChangesFeed();
 				}
 			} catch (error) {
-				setFeedback(error.message, 'error');
+				toast.error(error.message);
 				loading = false;
 			}
 		};
@@ -171,7 +167,6 @@
 <svelte:head><title>Cocina | Cafetería</title></svelte:head>
 
 <main>
-	{#if feedback.message}<p class="status-banner {feedback.type}">{feedback.message}</p>{/if}
 	{#if !dbInstance}
 		<div class="empty-state">
 			Configura una base de datos activa en <a href="/settings/database">Ajustes de Base de Datos</a

@@ -358,11 +358,6 @@
 		text-align: center;
 	}
 
-	.price {
-		text-align: right;
-		white-space: nowrap;
-	}
-
 	.duoshell .content {
 		padding: 5px;
 		background-color: #fff;

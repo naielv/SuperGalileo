@@ -14,11 +14,11 @@
 	import { onMount } from 'svelte';
 	import { compactLocalDb, syncOnce, testLocalDb, testRemoteDb } from '$lib/db';
 	import { m } from '$lib/paraglide/messages';
+	import { toast } from 'svelte5-toaster';
 
 	const STORAGE_KEY = 'pouchdb_connections_v1';
 
 	let databases = $state([]);
-	let feedback = $state({ type: 'info', message: '' });
 	let online = $state(true);
 	let busyById = $state({});
 	let editingId = $state(null);
@@ -84,10 +84,6 @@
 		window.dispatchEvent(new CustomEvent('database-updated'));
 	}
 
-	function setFeedback(message, type = 'info') {
-		feedback = { type, message };
-	}
-
 	function updateDatabase(id, updater) {
 		databases = databases.map((item) => {
 			if (item.id !== id) {
@@ -117,7 +113,7 @@
 			databases = Array.isArray(parsed) ? parsed.map(normalizeConfig) : [];
 		} catch {
 			databases = [];
-			setFeedback('No se pudo leer configuracion guardada. Se inicio una lista nueva.', 'warning');
+			toast.warning('No se pudo leer configuracion guardada. Se inicio una lista nueva.');
 		}
 	}
 
@@ -157,7 +153,7 @@
 		}
 
 		saveDatabases();
-		setFeedback('Configuracion eliminada.', 'success');
+		toast.success('Configuracion eliminada.');
 		if (editingId === config.id) {
 			resetForm();
 		}
@@ -181,14 +177,14 @@
 				lastStatus: `Local OK (${info.docCount} docs)`,
 				lastError: ''
 			}));
-			setFeedback(`Base local ${config.localDatabase} disponible.`, 'success');
+			toast.success(`Base local ${config.localDatabase} disponible.`);
 		} catch (error) {
 			updateDatabase(config.id, (item) => ({
 				...item,
 				lastStatus: 'Error en base local',
 				lastError: error instanceof Error ? error.message : 'Error desconocido'
 			}));
-			setFeedback('No se pudo validar la base local.', 'error');
+			toast.error('No se pudo validar la base local.');
 		} finally {
 			setBusy(config.id, false);
 		}
@@ -203,14 +199,14 @@
 				lastStatus: `Servidor OK (${info.docCount} docs)`,
 				lastError: ''
 			}));
-			setFeedback('Conexion remota validada.', 'success');
+			toast.success('Conexion remota validada.');
 		} catch (error) {
 			updateDatabase(config.id, (item) => ({
 				...item,
 				lastStatus: 'Error de conexion remota',
 				lastError: error instanceof Error ? error.message : 'Error desconocido'
 			}));
-			setFeedback('No se pudo validar el servidor remoto.', 'error');
+			toast.error('No se pudo validar el servidor remoto.');
 		} finally {
 			setBusy(config.id, false);
 		}
@@ -225,14 +221,14 @@
 				lastStatus: 'Compactacion local completada',
 				lastError: ''
 			}));
-			setFeedback(`Compactacion de ${config.localDatabase} completada.`, 'success');
+			toast.success(`Compactacion de ${config.localDatabase} completada.`);
 		} catch (error) {
 			updateDatabase(config.id, (item) => ({
 				...item,
 				lastStatus: 'Error en compactacion local',
 				lastError: error instanceof Error ? error.message : 'Error desconocido'
 			}));
-			setFeedback('No se pudo compactar la base local.', 'error');
+			toast.error('No se pudo compactar la base local.');
 		} finally {
 			setBusy(config.id, false);
 		}
@@ -248,14 +244,14 @@
 				lastSyncAt: new Date().toISOString(),
 				lastError: ''
 			}));
-			setFeedback('Sincronizacion manual completada.', 'success');
+			toast.success('Sincronizacion manual completada.');
 		} catch (error) {
 			updateDatabase(config.id, (item) => ({
 				...item,
 				lastStatus: 'Fallo en sync manual',
 				lastError: error instanceof Error ? error.message : 'Error desconocido'
 			}));
-			setFeedback('No se pudo completar la sincronizacion manual.', 'error');
+			toast.error('No se pudo completar la sincronizacion manual.');
 			throw error; // Rethrow to allow further handling if needed
 		} finally {
 			setBusy(config.id, false);
@@ -278,12 +274,12 @@
 		});
 
 		if (!normalized.name || !normalized.localDatabase) {
-			setFeedback('Nombre y base local son obligatorios.', 'warning');
+			toast.warning('Nombre y base local son obligatorios.');
 			return;
 		}
 
 		if (normalized.syncEnabled && (!normalized.serverUrl || !normalized.remoteDatabase)) {
-			setFeedback('Para sincronizar, completa servidor y base remota.', 'warning');
+			toast.warning('Para sincronizar, completa servidor y base remota.');
 			return;
 		}
 
@@ -291,7 +287,7 @@
 			databases = databases.map((item) =>
 				item.id === editingId ? { ...item, ...normalized } : item
 			);
-			setFeedback('Configuracion actualizada.', 'success');
+			toast.success('Configuracion actualizada.');
 		} else {
 			databases = [
 				...databases,
@@ -303,7 +299,7 @@
 					lastError: ''
 				}
 			];
-			setFeedback('Base registrada.', 'success');
+			toast.success('Base registrada.');
 		}
 
 		saveDatabases();
@@ -314,11 +310,11 @@
 		online = navigator.onLine;
 		const handleOnline = () => {
 			online = true;
-			setFeedback('Conexion restaurada.', 'info');
+			toast.info('Conexion restaurada.');
 		};
 		const handleOffline = () => {
 			online = false;
-			setFeedback('Sin conexion. El modo offline-first sigue disponible.', 'warning');
+			toast.warning('Sin conexion. El modo offline-first sigue disponible.');
 		};
 
 		window.addEventListener('online', handleOnline);
@@ -346,9 +342,6 @@
 	<p class="status-banner {online ? 'ok' : 'warning'}">
 		{online ? 'Conectado a internet' : 'Sin internet: datos locales disponibles'}
 	</p>
-	{#if feedback.message}
-		<p class="status-banner {feedback.type}">{feedback.message}</p>
-	{/if}
 </main>
 
 <h3>Bases registradas</h3>
@@ -514,8 +507,7 @@
 		font-weight: bold;
 	}
 
-	.status-banner.ok,
-	.status-banner.success {
+	.status-banner.ok {
 		background: #d9f7dd;
 		color: #124218;
 	}
@@ -524,12 +516,6 @@
 		background: #fff4cc;
 		color: #5b4200;
 	}
-
-	.status-banner.error {
-		background: #ffe1e1;
-		color: #6f1111;
-	}
-
 	.inline-check {
 		display: flex;
 		align-items: center;
@@ -550,14 +536,6 @@
 		gap: 1px;
 		width: 100%;
 		justify-content: center;
-	}
-
-	.mini {
-		padding: 6px 8px;
-		font-size: 13px;
-		display: inline-flex;
-		align-items: center;
-		gap: 4px;
 	}
 
 	.error-text {
