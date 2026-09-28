@@ -19,7 +19,7 @@ body {
 .accent {
 	color: white !important;
 	background-color: var(--accent, black) !important;
-	transition: background-color 1.75s ease-in-out;
+	transition: background-color 0.5s ease-in-out;
 }
 
 p,

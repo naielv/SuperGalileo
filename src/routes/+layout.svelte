@@ -46,7 +46,7 @@
 		flex-direction: column;
 		height: 100vh;
 		background-color: var(--accent, black);
-		transition: background-color 1.75s ease-in-out;
+		transition: background-color 0.5s ease-in-out;
 	}
 	.shell .row {
 		display: flex;
