@@ -1,9 +1,10 @@
 <script>
 	import { onMount } from 'svelte';
-	import { safeRandomString } from '$lib/db.js';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
-	import { getActiveDb, getActiveDbConfig } from '$lib/db';
+	import { safeRandomString, getActiveDb, getActiveDbConfig } from '$lib/db';
+	import { m } from '$lib/paraglide/messages';
+
 	import SvgIcon from '@jamescoyle/svelte-icon';
 	import {
 		mdiAccount,
@@ -14,241 +15,290 @@
 		mdiEye,
 		mdiEyeOff
 	} from '@mdi/js';
+
 	import FormSubmitButton from '$lib/comp/buttons/FormSubmitButton.svelte';
 	import ActionButton from '$lib/comp/buttons/ActionButton.svelte';
-	import { go_back_personas, m } from '$lib/paraglide/messages';
 	import LinkButton from '$lib/comp/buttons/LinkButton.svelte';
 
-	// Get ID from route params
-	const idParam = page.params.id;
-	const isNew = idParam === '_new';
+	let id = $derived(page.params.id);
+	let isNew = $derived(id === '_new');
 
-	let activeDbName = $state('');
-	let dbInstance = $state(null);
+	let db = $state(null);
 	let feedback = $state({ type: 'info', message: '' });
 
-	// Form state
 	let nombre = $state('');
 	let region = $state('');
 	let roles = $state('');
 	let oculto = $state(false);
 	let markdown = $state('');
 	let monederoBalance = $state(0);
-
-  let predefinedRoles = {
-    [m.system()]: {
-      "ADMIN": m.system_admin(),
-    },
-    [m.people()]: {
-      "personas": m.people_access(),
-      "personas:edit": m.people_edit(),
-    },
-    [m.coffee_shop()]: {
-      "supercafe": m.supercafe_access(),
-      "supercafe:edit": m.supercafe_edit(),
-    },
-  };
-
-	// Predefined list of regions loaded from other entries
 	let existingRegions = $state([]);
 	let rev = $state('');
 
-	function setFeedback(message, type = 'info') {
-		feedback = { type, message };
-	}
-
-	// Safe markdown to HTML converter to avoid XSS
-	function renderSafeMarkdown(md) {
-		if (!md) return '';
-
-		// 1. Escape HTML to prevent XSS
-		let html = md
-			.replace(/&/g, '&amp;')
-			.replace(/</g, '&lt;')
-			.replace(/>/g, '&gt;')
-			.replace(/"/g, '&quot;')
-			.replace(/'/g, '&#039;');
-
-		// 2. Convert bold (**text**)
-		html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-		// 3. Convert italics (*text*)
-		html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-
-		// 4. Convert links ([text](url)) safely
-		html = html.replace(
-			/\[(.*?)\]\((https?:\/\/.*?)\)/g,
-			'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
-		);
-
-		// 5. Convert newlines to <br>
-		html = html.replace(/\n/g, '<br>');
-
-		return html;
-	}
-
-	function loadActiveDatabase() {
-		try {
-			const activeDb = getActiveDbConfig();
-			dbInstance = getActiveDb();
-
-			if (activeDb && dbInstance) {
-				activeDbName = activeDb.localDatabase;
-				loadData();
-			} else {
-				setFeedback(m.db_no_active(), 'warning');
-			}
-		} catch (e) {
-			setFeedback(m.db_load_error({ error: e.message }), 'error');
+	const predefinedRoles = {
+		[m.system()]: {
+			ADMIN: m.system_admin()
+		},
+		[m.people()]: {
+			personas: m.people_access(),
+			'personas:edit': m.people_edit()
+		},
+		[m.coffee_shop()]: {
+			supercafe: m.supercafe_access(),
+			'supercafe:edit': m.supercafe_edit()
 		}
+	};
+
+	function feedbackMessage(message, type = 'info') {
+		feedback = { message, type };
 	}
 
-	async function loadData() {
-		if (!dbInstance) return;
+	function resetForm() {
+		nombre = '';
+		region = '';
+		roles = '';
+		oculto = false;
+		markdown = '';
+		monederoBalance = 0;
+		rev = '';
+		feedback = { type: 'info', message: '' };
+	}
+
+	function toggleRole(role) {
+		const current = roles
+			.split(',')
+			.map((r) => r.trim())
+			.filter(Boolean);
+
+		roles = current.includes(role)
+			? current.filter((r) => r !== role).join(',')
+			: [...current, role].join(',');
+	}
+
+	async function loadData(currentId) {
+		if (!db) return;
+
+		resetForm();
+
 		try {
-			// Load all people to extract existing regions
-			const allResult = await dbInstance.allDocs({
+			const result = await db.allDocs({
 				startkey: 'personas:',
 				endkey: 'personas:\ufff0',
 				include_docs: true
 			});
-			const allPeople = allResult.rows
-				.map((row) => row.doc?.data)
-				.filter((p) => p !== undefined && p !== null);
 
-			const regionsSet = new Set();
-			allPeople.forEach((p) => {
-				if (p.Region) {
-					regionsSet.add(p.Region);
-				}
-			});
-			existingRegions = Array.from(regionsSet);
+			existingRegions = [
+				...new Set(
+					result.rows
+						.map((row) => row.doc?.data?.Region)
+						.filter(Boolean)
+				)
+			];
 
-			if (!isNew) {
-				// Load specific person
-				const docId = `personas:${idParam}`;
-				try {
-					const doc = await dbInstance.get(docId);
-					const data = doc.data || {};
-					nombre = data.Nombre || '';
-					region = data.Region || '';
-					roles = data.Roles || '';
-					oculto = Boolean(data.Oculto);
-					markdown = data.markdown || '';
-					monederoBalance = Number(data.Monedero_Balance || 0);
-					rev = doc._rev;
-				} catch (err) {
-					if (err.status === 404) {
-						setFeedback(m.load_failed({ error: 'La persona solicitada no existe.' }), 'error');
-					} else {
-						throw err;
-					}
-				}
+			if (currentId === '_new') return;
+
+			const doc = await db.get(`personas:${currentId}`);
+			const data = doc.data ?? {};
+
+			nombre = data.Nombre ?? '';
+			region = data.Region ?? '';
+			roles = data.Roles ?? '';
+			oculto = Boolean(data.Oculto);
+			markdown = data.markdown ?? '';
+			monederoBalance = Number(data.Monedero_Balance ?? 0);
+			rev = doc._rev;
+		} catch (error) {
+			if (error.status === 404) {
+				feedbackMessage(
+					m.load_failed({
+						error: 'La persona solicitada no existe.'
+					}),
+					'error'
+				);
+			} else {
+				feedbackMessage(
+					m.load_failed({ error: error.message }),
+					'error'
+				);
 			}
-		} catch (e) {
-			setFeedback(m.load_failed({ error: e.message }), 'error');
 		}
+			window.dispatchEvent(new CustomEvent('sidebar-closed'));
 	}
 
-	async function savePerson(e) {
-		e.preventDefault();
-		if (!dbInstance) return;
+	async function savePerson(event) {
+		event.preventDefault();
 
-		const docId = isNew
-			? `personas:${Date.now()}_${safeRandomString()}` // Use default size
-			: `personas:${idParam}`;
+		if (!db) return;
 
-		const payload = {
-			_id: docId,
+		const doc = {
+			_id: isNew
+				? `personas:${Date.now()}_${safeRandomString()}`
+				: `personas:${id}`,
 			data: {
 				Nombre: nombre.trim(),
 				Region: region.trim(),
 				Roles: roles.trim(),
 				Oculto: oculto,
-				markdown: markdown,
+				markdown,
 				Monedero_Balance: Number(monederoBalance)
 			}
 		};
 
 		if (!isNew && rev) {
-			payload._rev = rev;
+			doc._rev = rev;
 		}
 
 		try {
-			await dbInstance.put(payload);
-			setFeedback(m.save_success({ name: nombre }), 'success');
-			setTimeout(() => {
-				goto('/people');
-			}, 1000);
-		} catch (err) {
-			setFeedback(m.save_error({ name: nombre, error: err.message }), 'error');
+			await db.put(doc);
+
+			feedbackMessage(
+				m.save_success({ name: nombre }),
+				'success'
+			);
+
+			setTimeout(() => goto('/people'), 1000);
+		} catch (error) {
+			feedbackMessage(
+				m.save_error({
+					name: nombre,
+					error: error.message
+				}),
+				'error'
+			);
 		}
 	}
 
 	async function deletePerson() {
-		if (!confirm(`¿Seguro que deseas eliminar a ${nombre}?`)) return;
-		if (!dbInstance || isNew) return;
+		if (
+			isNew ||
+			!db ||
+			!confirm(`¿Seguro que deseas eliminar a ${nombre}?`)
+		) {
+			return;
+		}
 
 		try {
-			const doc = await dbInstance.get(`personas:${idParam}`);
-			await dbInstance.remove(doc);
-			setFeedback(m.delete_success({ name: nombre }), 'success');
-			setTimeout(() => {
-				goto('/people');
-			}, 1000);
-		} catch (err) {
-			setFeedback(m.delete_error({ name: nombre, error: err.message }), 'error');
+			const doc = await db.get(`personas:${id}`);
+			await db.remove(doc);
+
+			feedbackMessage(
+				m.delete_success({ name: nombre }),
+				'success'
+			);
+
+			setTimeout(() => goto('/people'), 1000);
+		} catch (error) {
+			feedbackMessage(
+				m.delete_error({
+					name: nombre,
+					error: error.message
+				}),
+				'error'
+			);
 		}
 	}
 
 	onMount(() => {
-		loadActiveDatabase();
+		try {
+			const config = getActiveDbConfig();
+
+			if (!config) {
+				feedbackMessage(m.db_no_active(), 'warning');
+				return;
+			}
+
+			db = getActiveDb();
+		} catch (error) {
+			feedbackMessage(
+				m.db_load_error({ error: error.message }),
+				'error'
+			);
+		}
+	});
+
+	$effect(() => {
+		if (db && id) {
+			loadData(id);
+		}
 	});
 </script>
 
 <div class="flex-header">
-	<h1>{isNew ? m.new_person() : m.edit_wname({ name: nombre })}</h1>
+	<h1>
+		{isNew ? m.new_person() : m.edit_wname({ name: nombre })}
+	</h1>
+
 	<div class="top-actions">
-		<LinkButton href="/people" icon={mdiArrowLeft} label={m.go_back_personas()} />
+		<LinkButton
+			href="/people"
+			icon={mdiArrowLeft}
+			label={m.go_back_personas()}
+		/>
 	</div>
 </div>
 
 <main>
 	{#if feedback.message}
-		<p class="status-banner {feedback.type}">{feedback.message}</p>
+		<p class="status-banner {feedback.type}">
+			{feedback.message}
+		</p>
 	{/if}
 
-	{#if dbInstance}
-		<form onsubmit={savePerson} class="main-form">
+	{#if db}
+		<form class="main-form" onsubmit={savePerson}>
 			<div class="form-layout">
 				<div>
 					<fieldset>
 						<legend>
-							<SvgIcon path={mdiAccount} type="mdi" size="1.2em" /> {m.personal_data()}
+							<SvgIcon
+								path={mdiAccount}
+								type="mdi"
+								size="1.2em"
+							/>
+							{m.personal_data()}
 						</legend>
 
 						<label>
 							<b>{m.full_name()}</b>
-							<input type="text" bind:value={nombre} placeholder="Ej. Juan Pérez" required />
+							<input
+								type="text"
+								bind:value={nombre}
+								placeholder="Ej. Juan Pérez"
+								required
+							/>
 						</label>
 
 						<label>
 							<b>{m.region_classroom()}</b>
-							<input type="text" bind:value={region} placeholder="Ej. Aula C" list="regions-list" />
+							<input
+								type="text"
+								bind:value={region}
+								placeholder="Ej. Aula C"
+								list="regions-list"
+							/>
+
 							<datalist id="regions-list">
 								{#each existingRegions as r}
 									<option value={r}>{r}</option>
 								{/each}
 							</datalist>
-							<small class="help-text"
-								>{m.region_classroom_placeholder()}</small
-							>
+
+							<small class="help-text">
+								{m.region_classroom_placeholder()}
+							</small>
 						</label>
 
 						<label>
 							<b>{m.roles()}:</b>
-							<input type="text" bind:value={roles} placeholder="A,B,C" />
-							<small class="help-text">{m.roles_placeholder()}</small>
+							<input
+								type="text"
+								bind:value={roles}
+								placeholder="A,B,C"
+							/>
+
+							<small class="help-text">
+								{m.roles_placeholder()}
+							</small>
 						</label>
 
 						<label>
@@ -258,13 +308,12 @@
 								type="number"
 								step="0.01"
 								bind:value={monederoBalance}
-								placeholder="0.00"
-								required
 							/>
 						</label>
 
 						<label style="margin-top: 15px;">
 							<b>{m.notes_section()}:</b>
+
 							<textarea
 								bind:value={markdown}
 								rows="6"
@@ -273,9 +322,23 @@
 						</label>
 
 						<label class="inline-check input">
-							<input type="checkbox" style="display: none;" bind:checked={oculto} />
-							<SvgIcon path={oculto ? mdiEyeOff : mdiEye} type="mdi" size="1.6em" />
-							<span>{oculto ? m.hide_from_inputs() : m.show_in_inputs()}</span>
+							<input
+								type="checkbox"
+								style="display: none;"
+								bind:checked={oculto}
+							/>
+
+							<SvgIcon
+								path={oculto ? mdiEyeOff : mdiEye}
+								type="mdi"
+								size="1.6em"
+							/>
+
+							<span>
+								{oculto
+									? m.hide_from_inputs()
+									: m.show_in_inputs()}
+							</span>
 						</label>
 					</fieldset>
 
@@ -284,6 +347,7 @@
 							label={isNew ? m.new_person() : m.save()}
 							icon={mdiContentSave}
 						/>
+
 						{#if !isNew}
 							<ActionButton
 								label={m.delete()}
@@ -294,34 +358,36 @@
 						{/if}
 					</div>
 				</div>
+
 				<fieldset>
-					<!-- Roles -->
 					<legend>
-						<SvgIcon path={mdiBadgeAccount} type="mdi" size="1.2em" /> {m.roles_and_permissions()}
+						<SvgIcon
+							path={mdiBadgeAccount}
+							type="mdi"
+							size="1.2em"
+						/>
+						{m.roles_and_permissions()}
 					</legend>
+
 					<div class="roles-permissions">
-            {#each Object.entries(predefinedRoles) as [category, perms]}
-              <b>{category}</b>
-              {#each Object.entries(perms) as [permKey, permLabel]}
-                <label>
-                  {permLabel}
-                  <input
-                    type="checkbox"
-                    checked={roles.includes(permKey)}
-                    onchange={() => {
-                      if (roles.includes(permKey)) {
-                        roles = roles
-                          .split(',')
-                          .filter((r) => r.trim() !== permKey && r.trim() !== '')
-                          .join(',');
-                      } else {
-                        roles = roles ? `${roles},${permKey}` : permKey;
-                      }
-                    }}
-                  />
-                </label>
-              {/each}
-            {/each}
+						{#each Object.entries(predefinedRoles) as [category, permissions]}
+							<b>{category}</b>
+
+							{#each Object.entries(permissions) as [key, label]}
+								<label>
+									{label}
+
+									<input
+										type="checkbox"
+										checked={roles
+											.split(',')
+											.map((r) => r.trim())
+											.includes(key)}
+										onchange={() => toggleRole(key)}
+									/>
+								</label>
+							{/each}
+						{/each}
 					</div>
 				</fieldset>
 			</div>
@@ -330,59 +396,35 @@
 </main>
 
 <style>
-.roles-permissions {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  overflow-y: auto;
-}
-.roles-permissions b {
-  margin-top: 10px;
-  font-size: 14px;
-  text-align: center;
-}
-.roles-permissions label {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  padding: 5px 7.5px;
-  border-radius: 5px;
-  gap: 5px;
-  border: 1px solid #000;
-  margin: 0;
-}
-.roles-permissions label input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
-  margin: 0;
-}
-	.header-container {
-		background: darkslateblue;
-		padding: 10px 20px;
-    padding-top: 2.5px;
-		color: white;
-		text-align: center;
-		position: relative;
+	.roles-permissions {
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+		overflow-y: auto;
 	}
 
-	.header-container h1 {
-		background: transparent;
-		padding: 0;
+	.roles-permissions b {
+		margin-top: 10px;
+		font-size: 14px;
+		text-align: center;
+	}
+
+	.roles-permissions label {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+		padding: 5px 7.5px;
+		border-radius: 5px;
+		gap: 5px;
+		border: 1px solid #000;
 		margin: 0;
 	}
 
-	.back-link {
-		position: absolute;
-		left: 15px;
-		top: 50%;
-		transform: translateY(-50%);
-		color: white;
-		text-decoration: none;
-		display: flex;
-		align-items: center;
-		gap: 5px;
-		font-size: 16px;
+	.roles-permissions label input[type='checkbox'] {
+		width: 20px;
+		height: 20px;
+		margin: 0;
 	}
 
 	.status-banner {
@@ -443,42 +485,5 @@
 		margin-top: 20px;
 		align-items: center;
 		flex-wrap: wrap;
-	}
-
-	.preview-panel {
-		background: #f8fafc;
-		border: 1px solid #e2e8f0;
-		border-radius: 6px;
-		padding: 15px;
-		align-self: start;
-	}
-
-	.preview-panel h3 {
-		margin-top: 0;
-		margin-bottom: 10px;
-		font-size: 16px;
-		border-bottom: 1px solid #e2e8f0;
-		padding-bottom: 5px;
-		color: #334155;
-	}
-
-	.markdown-body {
-		font-size: 14px;
-		line-height: 1.5;
-		color: #334155;
-		word-break: break-word;
-	}
-
-	.markdown-body :global(a) {
-		color: #2563eb;
-		text-decoration: underline;
-	}
-
-	.markdown-body :global(strong) {
-		font-weight: bold;
-	}
-
-	.markdown-body :global(em) {
-		font-style: italic;
 	}
 </style>

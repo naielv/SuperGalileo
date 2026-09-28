@@ -20,14 +20,14 @@
 		mdiHome
 	} from '@mdi/js';
 	let { children } = $props();
-	let sidebar_open = $state(window.innerWidth >= 768);
+	// let sidebar_open = $state(true);
 
-	function onMenuLinkClick() {
-		// If sidebar is open and the screen width is less than 768px, close the sidebar
-		if (sidebar_open && window.innerWidth < 768) {
-			sidebar_open = false;
-		}
-	}
+	// function onMenuLinkClick() {
+	// 	// If sidebar is open and the screen width is less than 768px, close the sidebar
+	// 	if (sidebar_open && window.innerWidth < 768) {
+	// 		sidebar_open = false;
+	// 	}
+	// }
 	// Listen to click events on the sidebar .apps container to close the sidebar when a link is clicked
 	document.addEventListener('click', (event) => {
 		const sidebarApps = document.querySelector('.sidebar .apps');
@@ -37,14 +37,14 @@
 	});
 
 	// Listen for window resize events to automatically open/close the sidebar based on screen width
-	function handleResize() {
-		if (window.innerWidth >= 768) {
-			sidebar_open = true;
-		} else {
-			sidebar_open = false;
-		}
-	}
-	window.addEventListener('resize', handleResize);
+	// function handleResize() {
+	// 	if (window.innerWidth >= 768) {
+	// 		sidebar_open = true;
+	// 	} else {
+	// 		sidebar_open = false;
+	// 	}
+	// }
+	// window.addEventListener('resize', handleResize);
 
 	let currentSyncRandomInt = $state(null);
 </script>
@@ -56,7 +56,7 @@
 
 <div
 	class="shell"
-	class:sidebarOpen={sidebar_open}
+	// class:sidebarOpen={sidebar_open}
 	style:--accent={currentSyncRandomInt === null
 		? 'black'
 		: `hsl(${currentSyncRandomInt}deg 40% 30%)`}
@@ -68,11 +68,11 @@
 			console.debug("Hue Change", {level: hash, hue: currentSyncRandomInt, multiplier: multiplier})
 		}}
 		toggleSidebar={() => {
-			sidebar_open = !sidebar_open;
+			window.dispatchEvent(new CustomEvent('sidebar-toggle'));
 		}}
 	/>
 	<div class="row">
-		{#if sidebar_open}
+		{#if false}
 			<aside class="sidebar no-print">
 				<div class="apps">
 					<SidebarButton href="/" icon={mdiHome} label={m.home_index()} />

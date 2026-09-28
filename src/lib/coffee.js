@@ -148,3 +148,27 @@ export function calculateOrderPrice(order, prices) {
 export function personIdFromValue(value) {
 	return String(value || '').replace(/^personas:/, '');
 }
+
+export function orderSummary(order) {
+	const parsed = parseOrder(order.Comanda);
+	return [parsed.Selección].filter(Boolean).join(', ') || 'Sin detalle';
+}
+
+export function formatDate(dateString) {
+	if (!dateString) return '';
+	const date = new Date(dateString);
+	const now = new Date();
+
+	// Si es el año actual, definimos manualmente solo mes y día
+	if (date.getFullYear() === now.getFullYear()) {
+		return date.toLocaleString(getLocale(), {
+			month: 'short', // Equivalente al estilo 'medium' (ej: "26 may" o "May 26")
+			day: 'numeric'
+		});
+	}
+
+	// Si es un año diferente, usamos el estilo mediano estándar (incluye el año)
+	return date.toLocaleString(getLocale(), {
+		dateStyle: 'medium'
+	});
+}
