@@ -35,7 +35,13 @@
 
 	async function loadData(idParam) {
 		if (!dbInstance) return;
-		if (isNew) return;
+		if (isNew) {
+			asunto = '';
+			contenido = '';
+			autor = null;
+			rev = '';
+			return
+		};
 
 		try {
 			const doc = await dbInstance.get(`notas:${idParam}`);

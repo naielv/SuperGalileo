@@ -90,7 +90,16 @@
 				)
 			];
 
-			if (currentId === '_new') return;
+			if (currentId == "_new") {
+				nombre = '';
+				region = '';
+				roles = '';
+				oculto = false;
+				markdown = '';
+				monederoBalance = 0;
+				rev = '';
+				return
+			};
 
 			const doc = await db.get(`personas:${currentId}`);
 			const data = doc.data ?? {};
