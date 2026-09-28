@@ -115,7 +115,6 @@
 				);
 			}
 		}
-		window.dispatchEvent(new CustomEvent('sidebar-closed'));
 	}
 
 	async function savePerson(event) {
@@ -206,6 +205,7 @@
 	$effect(() => {
 		if (db && id) {
 			loadData(id);
+			window.dispatchEvent(new CustomEvent('sidebar-closed'));
 		}
 	});
 </script>
@@ -406,28 +406,6 @@
 		width: 20px;
 		height: 20px;
 		margin: 0;
-	}
-
-	.status-banner {
-		padding: 10px;
-		border-radius: 5px;
-		margin-bottom: 15px;
-		font-weight: bold;
-	}
-
-	.status-banner.success {
-		background: #d9f7dd;
-		color: #124218;
-	}
-
-	.status-banner.warning {
-		background: #fff4cc;
-		color: #5b4200;
-	}
-
-	.status-banner.error {
-		background: #ffe1e1;
-		color: #6f1111;
 	}
 
 	.form-layout {

@@ -54,7 +54,6 @@
 				console.error('Error al cargar datos: ' + err.message);
 			}
 		}
-		window.dispatchEvent(new CustomEvent('sidebar-closed'));
 	}
 
 	async function saveNote(e) {
@@ -121,6 +120,7 @@
 	$effect(() => {
 		if (dbInstance && idParam) {
 			loadData(idParam);
+			window.dispatchEvent(new CustomEvent('sidebar-closed'));
 		}
 	});
 </script>
