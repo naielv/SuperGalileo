@@ -1,6 +1,7 @@
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import adapter from "@sveltejs/adapter-static";
 import { sveltekit } from '@sveltejs/kit/vite';
+import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 import { defineConfig } from 'vite';
 import commonjs from 'vite-plugin-commonjs';
 
@@ -26,6 +27,22 @@ export default defineConfig({
 				precompress: false,
 				strict: true,
 			}),
+		}),
+		SvelteKitPWA({
+			// Opciones de configuración o déjalo en modo cero-configuración
+			manifest: {
+				orientation: "any",
+				display: "standalone",
+				dir: "auto",
+				name: "Galileo",
+				short_name: "Galileo",
+				theme_color: '#ffa3a3',
+				icons: [
+					{"purpose":"maskable","sizes":"512x512","src":"/icon512_maskable.png","type":"image/png"},
+					{"purpose":"any","sizes":"512x512","src":"/icon512_rounded.png","type":"image/png"}
+				]
+			},
+			devOptions: {enabled: true},
 		}),
 
 		paraglideVitePlugin({
