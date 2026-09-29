@@ -174,7 +174,7 @@
 		if (people.has(id)) return;
 
 		try {
-			const person = await db.get(id);
+			const person = await db.get(id, {attachments: true, binary: true});
 
 			people = new Map(people).set(id, person);
 		} catch (error) {
