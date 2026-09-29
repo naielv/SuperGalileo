@@ -27,6 +27,7 @@
 	let people = $state(new Map());
 	let prices = $state(DEFAULT_COFFEE_PRICES);
 	let sidebar = $state(true);
+	let showIcons = $state(false);
 
 	let changesFeed = null;
 
@@ -163,6 +164,26 @@
 		changesFeed = null;
 	}
 
+	async function loadPerson(record) {
+		const personId = record.data?.Persona;
+
+		if (!personId || !db) return;
+
+		const id = `personas:${personId}`;
+
+		if (people.has(id)) return;
+
+		try {
+			const person = await db.get(id);
+
+			people = new Map(people).set(id, person);
+		} catch (error) {
+			if (error.status !== 404) {
+				console.error(`Error cargando ${id}:`, error);
+			}
+		}
+	}
+
 	async function handleChange({ id, deleted, doc }) {
 		if (!id.startsWith(`${PREFIX}:`)) return;
 
@@ -185,26 +206,6 @@
 			await loadPerson(record);
 		} catch (error) {
 			console.error(`Error procesando ${id}:`, error);
-		}
-	}
-
-	async function loadPerson(record) {
-		const personId = record.data?.Persona;
-
-		if (!personId || !db) return;
-
-		const id = `personas:${personId}`;
-
-		if (people.has(id)) return;
-
-		try {
-			const person = await db.get(id);
-
-			people = new Map(people).set(id, person);
-		} catch (error) {
-			if (error.status !== 404) {
-				console.error(`Error cargando ${id}:`, error);
-			}
 		}
 	}
 
@@ -254,11 +255,12 @@
 	<div class="duoshell" class:collapsed={!sidebar}>
 		<div class="recordList">
 			<div class="title">
-				<h3>Comandas Café</h3>
+				<input type="checkbox" title="Mostrar comanda" bind:checked={showIcons}>
+				<h3>Comandas</h3>
 				<a href="/coffee_shop/_new">Nuevo</a>
 			</div>
 
-			{#each records as record}
+			{#each records.toSorted((a, b) => b.data.Fecha.localeCompare(a.data.Fecha) || getPerson(a)?.Region?.localeCompare(getPerson(b)?.Region) || getPerson(a)?.Nombre?.localeCompare(getPerson(b)?.Nombre)) as record}
 				{@const person = getPerson(record)}
 				{@const personId = getPersonId(record)}
 				{@const price = getOrderPrice(record)}
@@ -284,6 +286,7 @@
 								{/if}
 
 								<b>{person.data?.Nombre}</b>
+								<small><i>{person.data?.Region}</i></small>
 							</div>
 						{/if}
 
@@ -301,40 +304,42 @@
 							{price} €
 						</b>
 					</div>
-					<div class="rowflex" style="justify-content: center; font-size: 25px;">
-						{#if JSON.parse(record.data.Comanda).Tamaño}
-							<b style="border-radius: 5px; border: 1px solid red; padding: 1px 3px; background: white;">{JSON.parse(record.data.Comanda).Tamaño[0]}</b>
-						{/if}
-						{#if JSON.parse(record.data.Comanda).Temperatura == "Caliente"}
-							<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white;">🔥</b>
-						{/if}
-						{#if JSON.parse(record.data.Comanda).Temperatura == "Frio"}
-							<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white;">❄️</b>
-						{/if}
-						{#if JSON.parse(record.data.Comanda).Cafeina == "Con"}
-							<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white;">⚡️</b>
-						{/if}
-						{#if JSON.parse(record.data.Comanda).Cafeina == "Sin"}
-							<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white;">🐢</b>
-						{/if}
-						{#if JSON.parse(record.data.Comanda).Endulzante != "Sin" && JSON.parse(record.data.Comanda).Endulzante != undefined}
-							<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white; font-size: 21.5px;">👀<sub>A</sub></b>
-						{/if}
-						{#if JSON.parse(record.data.Comanda).Leche == "de Vaca"}
-							<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white;">🐮</b>
-						{/if}
+					{#if showIcons}
+						<div class="rowflex" style="justify-content: center; font-size: 25px;">
+							{#if JSON.parse(record.data.Comanda).Tamaño}
+								<b style="border-radius: 5px; border: 1px solid red; padding: 1px 3px; background: white;">{JSON.parse(record.data.Comanda).Tamaño[0]}</b>
+							{/if}
+							{#if JSON.parse(record.data.Comanda).Temperatura == "Caliente"}
+								<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white;">🔥</b>
+							{/if}
+							{#if JSON.parse(record.data.Comanda).Temperatura == "Frio"}
+								<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white;">❄️</b>
+							{/if}
+							{#if JSON.parse(record.data.Comanda).Cafeina == "Con"}
+								<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white;">⚡️</b>
+							{/if}
+							{#if JSON.parse(record.data.Comanda).Cafeina == "Sin"}
+								<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white;">🐢</b>
+							{/if}
+							{#if JSON.parse(record.data.Comanda).Endulzante != "Sin" && JSON.parse(record.data.Comanda).Endulzante != undefined}
+								<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white; font-size: 21.5px;">👀<sub>A</sub></b>
+							{/if}
+							{#if JSON.parse(record.data.Comanda).Leche == "de Vaca"}
+								<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white;">🐮</b>
+							{/if}
 
-						{#if JSON.parse(record.data.Comanda).Notas != "" && JSON.parse(record.data.Comanda).Notas != undefined}
-							<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white; font-size: 21.5px;">👀<sub>N</sub></b>
-						{/if}
-						{#if JSON.parse(record.data.Comanda).Leche != "Agua" && JSON.parse(record.data.Comanda).Leche != "de Vaca" && JSON.parse(record.data.Comanda).Endulzante != undefined}
-							<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white; font-size: 21.5px;">👀<sub>L</sub></b>
-						{/if}
-						{#if JSON.parse(record.data.Comanda).Receta == "Si"}
-							<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white;">🍪</b>
-						{/if}
-						<b style="border-radius: 5px; background: red; padding: 6px 3px; color: white; font-size: 17px;">{record.data.Estado}</b>
-					</div>
+							{#if JSON.parse(record.data.Comanda).Notas != "" && JSON.parse(record.data.Comanda).Notas != undefined}
+								<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white; font-size: 21.5px;">👀<sub>N</sub></b>
+							{/if}
+							{#if JSON.parse(record.data.Comanda).Leche != "Agua" && JSON.parse(record.data.Comanda).Leche != "de Vaca" && JSON.parse(record.data.Comanda).Endulzante != undefined}
+								<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white; font-size: 21.5px;">👀<sub>L</sub></b>
+							{/if}
+							{#if JSON.parse(record.data.Comanda).Receta == "Si"}
+								<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white;">🍪</b>
+							{/if}
+							<b style="border-radius: 5px; background: red; padding: 6px 3px; color: white; font-size: 17px;">{record.data.Estado}</b>
+						</div>
+					{/if}
 					<!-- {record.data.Comanda} -->
 				</a>
 			{/each}

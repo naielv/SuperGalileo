@@ -242,7 +242,7 @@
 				<a href="/notes/_new">Nuevo</a>
 			</div>
 
-			{#each records as record}
+			{#each records.toSorted((a, b) => a.data.Asunto.localeCompare(b.data.Asunto)) as record}
 				{@const person = getPerson(record.data?.Autor)}
 				{@const personId = getPersonId(person)}
 				{@const isActive = page.params.id === record._id.split(':')[1]}

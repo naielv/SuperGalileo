@@ -141,10 +141,16 @@
 	onMount(() => {
 		try {
 			dbInstance = getActiveDb();
-			if (dbInstance) loadOrder();
-			else setFeedback('No hay ninguna base de datos activa.', 'warning');
+			// if (dbInstance) loadOrder();
+			// else setFeedback('No hay ninguna base de datos activa.', 'warning');
 		} catch (error) {
 			setFeedback(error.message, 'error');
+		}
+	});
+	$effect(() => {
+		if (dbInstance && id) {
+			loadOrder();
+			window.dispatchEvent(new CustomEvent('sidebar-closed'));
 		}
 	});
 </script>
