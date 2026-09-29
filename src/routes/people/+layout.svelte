@@ -210,6 +210,15 @@
 		padding: 0 !important;
 	}
 
+	div.content {
+		padding: 0 !important;
+		background-color: wheat;
+	}
+	@media print {
+		div.content {
+			background-color: transparent;
+		}
+	}
 	.price {
 		text-align: right;
 		white-space: nowrap;

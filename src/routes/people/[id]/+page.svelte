@@ -83,14 +83,10 @@
 			});
 
 			existingRegions = [
-				...new Set(
-					result.rows
-						.map((row) => row.doc?.data?.Region)
-						.filter(Boolean)
-				)
+				...new Set(result.rows.map((row) => row.doc?.data?.Region).filter(Boolean))
 			];
 
-			if (currentId == "_new") {
+			if (currentId == '_new') {
 				nombre = '';
 				region = '';
 				roles = '';
@@ -98,8 +94,8 @@
 				markdown = '';
 				monederoBalance = 0;
 				rev = '';
-				return
-			};
+				return;
+			}
 
 			const doc = await db.get(`personas:${currentId}`);
 			const data = doc.data ?? {};
@@ -119,9 +115,7 @@
 					})
 				);
 			} else {
-				toast.error(
-					m.load_failed({ error: error.message })
-				);
+				toast.error(m.load_failed({ error: error.message }));
 			}
 		}
 	}
@@ -132,9 +126,7 @@
 		if (!db) return;
 
 		const doc = {
-			_id: isNew
-				? `personas:${Date.now()}_${safeRandomString()}`
-				: `personas:${id}`,
+			_id: isNew ? `personas:${Date.now()}_${safeRandomString()}` : `personas:${id}`,
 			data: {
 				Nombre: nombre.trim(),
 				Region: region.trim(),
@@ -152,9 +144,7 @@
 		try {
 			await db.put(doc);
 
-			toast.success(
-				m.save_success({ name: nombre })
-			);
+			toast.success(m.save_success({ name: nombre }));
 
 			setTimeout(() => goto('/people'), 1000);
 		} catch (error) {
@@ -168,11 +158,7 @@
 	}
 
 	async function deletePerson() {
-		if (
-			isNew ||
-			!db ||
-			!confirm(`¿Seguro que deseas eliminar a ${nombre}?`)
-		) {
+		if (isNew || !db || !confirm(`¿Seguro que deseas eliminar a ${nombre}?`)) {
 			return;
 		}
 
@@ -180,9 +166,7 @@
 			const doc = await db.get(`personas:${id}`);
 			await db.remove(doc);
 
-			toast.success(
-				m.delete_success({ name: nombre })
-			);
+			toast.success(m.delete_success({ name: nombre }));
 
 			setTimeout(() => goto('/people'), 1000);
 		} catch (error) {
@@ -205,9 +189,7 @@
 
 			db = getActiveDb();
 		} catch (error) {
-			toast.error(
-				m.db_load_error({ error: error.message })
-			);
+			toast.error(m.db_load_error({ error: error.message }));
 		}
 	});
 
@@ -219,171 +201,112 @@
 	});
 </script>
 
-<div class="flex-header">
-	<h1>
-		{isNew ? m.new_person() : m.edit_wname({ name: nombre })}
-	</h1>
-
-	<div class="top-actions">
-		<LinkButton
-			href="/people"
-			icon={mdiArrowLeft}
-			label={m.go_back_personas()}
-		/>
-	</div>
-</div>
-
-<main>
-	{#if db}
-		<form class="main-form" onsubmit={savePerson}>
-			<div class="form-layout">
-				<div>
-					<fieldset>
-						<legend>
-							<SvgIcon
-								path={mdiAccount}
-								type="mdi"
-								size="1.2em"
-							/>
-							{m.personal_data()}
-						</legend>
-
-						<label>
-							<b>{m.full_name()}</b>
-							<input
-								type="text"
-								bind:value={nombre}
-								placeholder="Ej. Juan Pérez"
-								required
-							/>
-						</label>
-
-						<label>
-							<b>{m.region_classroom()}</b>
-							<input
-								type="text"
-								bind:value={region}
-								placeholder="Ej. Aula C"
-								list="regions-list"
-							/>
-
-							<datalist id="regions-list">
-								{#each existingRegions as r}
-									<option value={r}>{r}</option>
-								{/each}
-							</datalist>
-
-							<small class="help-text">
-								{m.region_classroom_placeholder()}
-							</small>
-						</label>
-
-						<label>
-							<b>{m.roles()}:</b>
-							<input
-								type="text"
-								bind:value={roles}
-								placeholder="A,B,C"
-							/>
-
-							<small class="help-text">
-								{m.roles_placeholder()}
-							</small>
-						</label>
-
-						<label>
-							<b>{m.wallet_balance()}</b>
-							<input
-								disabled
-								type="number"
-								step="0.01"
-								bind:value={monederoBalance}
-							/>
-						</label>
-
-						<label style="margin-top: 15px;">
-							<b>{m.notes_section()}:</b>
-
-							<textarea
-								bind:value={markdown}
-								rows="6"
-								placeholder={m.notes_section_placeholder()}
-							></textarea>
-						</label>
-
-						<label class="inline-check input">
-							<input
-								type="checkbox"
-								style="display: none;"
-								bind:checked={oculto}
-							/>
-
-							<SvgIcon
-								path={oculto ? mdiEyeOff : mdiEye}
-								type="mdi"
-								size="1.6em"
-							/>
-
-							<span>
-								{oculto
-									? m.hide_from_inputs()
-									: m.show_in_inputs()}
-							</span>
-						</label>
-					</fieldset>
-
-					<div class="form-actions">
-						<FormSubmitButton
-							label={isNew ? m.new_person() : m.save()}
-							icon={mdiContentSave}
-						/>
-
-						{#if !isNew}
-							<ActionButton
-								label={m.delete()}
-								icon={mdiDelete}
-								background="#9f1a1a"
-								onclick={deletePerson}
-							/>
-						{/if}
-					</div>
-				</div>
-
+{#if db}
+	<form class="formflex" onsubmit={savePerson}>
+		<div class="form-layout">
+			<div>
 				<fieldset>
 					<legend>
-						<SvgIcon
-							path={mdiBadgeAccount}
-							type="mdi"
-							size="1.2em"
-						/>
-						{m.roles_and_permissions()}
+						<SvgIcon path={mdiAccount} type="mdi" size="1.2em" />
+						{m.personal_data()}
 					</legend>
 
-					<div class="roles-permissions">
-						{#each Object.entries(predefinedRoles) as [category, permissions]}
-							<b>{category}</b>
+					<label>
+						<b>{m.full_name()}</b>
+						<input type="text" bind:value={nombre} placeholder="Ej. Juan Pérez" required />
+					</label>
 
-							{#each Object.entries(permissions) as [key, label]}
-								<label>
-									{label}
+					<label>
+						<b>{m.region_classroom()}</b>
+						<input type="text" bind:value={region} placeholder="Ej. Aula C" list="regions-list" />
 
-									<input
-										type="checkbox"
-										checked={roles
-											.split(',')
-											.map((r) => r.trim())
-											.includes(key)}
-										onchange={() => toggleRole(key)}
-									/>
-								</label>
+						<datalist id="regions-list">
+							{#each existingRegions as r}
+								<option value={r}>{r}</option>
 							{/each}
-						{/each}
-					</div>
+						</datalist>
+
+						<small class="help-text">
+							{m.region_classroom_placeholder()}
+						</small>
+					</label>
+
+					<label>
+						<b>{m.roles()}:</b>
+						<input type="text" bind:value={roles} placeholder="A,B,C" />
+
+						<small class="help-text">
+							{m.roles_placeholder()}
+						</small>
+					</label>
+
+					<label>
+						<b>{m.wallet_balance()}</b>
+						<input disabled type="number" step="0.01" bind:value={monederoBalance} />
+					</label>
+
+					<label style="margin-top: 15px;">
+						<b>{m.notes_section()}:</b>
+
+						<textarea bind:value={markdown} rows="6" placeholder={m.notes_section_placeholder()}
+						></textarea>
+					</label>
+
+					<label class="inline-check input">
+						<input type="checkbox" style="display: none;" bind:checked={oculto} />
+
+						<SvgIcon path={oculto ? mdiEyeOff : mdiEye} type="mdi" size="1.6em" />
+
+						<span>
+							{oculto ? m.hide_from_inputs() : m.show_in_inputs()}
+						</span>
+					</label>
 				</fieldset>
+
+				<div class="form-actions">
+					<FormSubmitButton label={isNew ? m.new_person() : m.save()} icon={mdiContentSave} />
+
+					{#if !isNew}
+						<ActionButton
+							label={m.delete()}
+							icon={mdiDelete}
+							background="#9f1a1a"
+							onclick={deletePerson}
+						/>
+					{/if}
+				</div>
 			</div>
-		</form>
-	{/if}
-</main>
+
+			<fieldset>
+				<legend>
+					<SvgIcon path={mdiBadgeAccount} type="mdi" size="1.2em" />
+					{m.roles_and_permissions()}
+				</legend>
+
+				<div class="roles-permissions">
+					{#each Object.entries(predefinedRoles) as [category, permissions]}
+						<b>{category}</b>
+
+						{#each Object.entries(permissions) as [key, label]}
+							<label>
+								{label}
+
+								<input
+									type="checkbox"
+									checked={roles
+										.split(',')
+										.map((r) => r.trim())
+										.includes(key)}
+									onchange={() => toggleRole(key)}
+								/>
+							</label>
+						{/each}
+					{/each}
+				</div>
+			</fieldset>
+		</div>
+	</form>
+{/if}
 
 <style>
 	.roles-permissions {
@@ -453,5 +376,24 @@
 		margin-top: 20px;
 		align-items: center;
 		flex-wrap: wrap;
+	}
+
+	fieldset {
+		width: 100%;
+		max-width: 400px;
+		background-color: white;
+	}
+	legend {
+		background-color: white;
+		padding: 0 5px;
+	}
+	.formflex {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-start;
+		gap: 15px;
+		background-color: wheat;
+		height: 100%;
+		padding: 15px;
 	}
 </style>

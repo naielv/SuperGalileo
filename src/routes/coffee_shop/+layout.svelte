@@ -4,17 +4,15 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 
-	import {
-		getActiveDb,
-		getActiveDbConfig,
-		decryptValue
-	} from '$lib/db';
+	import { getActiveDb, getActiveDbConfig, decryptValue } from '$lib/db';
 
 	import { m } from '$lib/paraglide/messages';
 
 	import {
 		calculateOrderPrice,
 		DEFAULT_COFFEE_PRICES,
+		getOrderPrice,
+		ORDER_STATES_MAP,
 		orderSummary,
 		parseOrder
 	} from '$lib/coffee';
@@ -58,10 +56,7 @@
 			dbKey = config.encryptionKey;
 
 			await loadRecords();
-			await Promise.all([
-				loadPeople(),
-				loadPrices()
-			]);
+			await Promise.all([loadPeople(), loadPrices()]);
 
 			startChanges();
 		} catch (error) {
@@ -174,7 +169,7 @@
 		if (people.has(id)) return;
 
 		try {
-			const person = await db.get(id, {attachments: true, binary: true});
+			const person = await db.get(id, { attachments: true, binary: true });
 
 			people = new Map(people).set(id, person);
 		} catch (error) {
@@ -217,21 +212,12 @@
 		return record._id.split(':', 2)[1];
 	}
 
-	function getOrderPrice(record) {
-		return (
-			calculateOrderPrice(
-				parseOrder(record.data?.Comanda),
-				prices
-			) / 100
-		).toFixed(2);
-	}
-
 	function getPhotoUrl(person) {
 		const attachment = person?._attachments?.foto;
 
 		if (!attachment?.data) return '';
 
-		return URL.createObjectURL(attachment.data)
+		return URL.createObjectURL(attachment.data);
 	}
 
 	onMount(() => {
@@ -255,7 +241,7 @@
 	<div class="duoshell" class:collapsed={!sidebar}>
 		<div class="recordList">
 			<div class="title">
-				<input type="checkbox" title="Mostrar comanda" bind:checked={showIcons}>
+				<input type="checkbox" title="Mostrar comanda" bind:checked={showIcons} />
 				<h3>Comandas</h3>
 				<a href="/coffee_shop/_new">Nuevo</a>
 			</div>
@@ -263,7 +249,7 @@
 			{#each records.toSorted((a, b) => b.data.Fecha.localeCompare(a.data.Fecha) || getPerson(a)?.Region?.localeCompare(getPerson(b)?.Region) || getPerson(a)?.Nombre?.localeCompare(getPerson(b)?.Nombre)) as record}
 				{@const person = getPerson(record)}
 				{@const personId = getPersonId(record)}
-				{@const price = getOrderPrice(record)}
+				{@const price = getOrderPrice(prices, record)}
 				{@const isActive = page.params.id === personId}
 				{@const canPay = person?.data?.Monedero_Balance >= price}
 
@@ -297,49 +283,15 @@
 							</small>
 						</div>
 
-						<b
-							class="price"
-							style:color={canPay ? 'green' : 'red'}
-						>
+						<b class="price" style:color={canPay ? 'green' : 'red'}>
 							{price} €
 						</b>
 					</div>
-					{#if showIcons}
-						<div class="rowflex" style="justify-content: center; font-size: 25px;">
-							{#if JSON.parse(record.data.Comanda).Tamaño}
-								<b style="border-radius: 5px; border: 1px solid red; padding: 1px 3px; background: white;">{JSON.parse(record.data.Comanda).Tamaño[0]}</b>
-							{/if}
-							{#if JSON.parse(record.data.Comanda).Temperatura == "Caliente"}
-								<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white;">🔥</b>
-							{/if}
-							{#if JSON.parse(record.data.Comanda).Temperatura == "Frio"}
-								<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white;">❄️</b>
-							{/if}
-							{#if JSON.parse(record.data.Comanda).Cafeina == "Con"}
-								<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white;">⚡️</b>
-							{/if}
-							{#if JSON.parse(record.data.Comanda).Cafeina == "Sin"}
-								<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white;">🐢</b>
-							{/if}
-							{#if JSON.parse(record.data.Comanda).Endulzante != "Sin" && JSON.parse(record.data.Comanda).Endulzante != undefined}
-								<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white; font-size: 21.5px;">👀<sub>A</sub></b>
-							{/if}
-							{#if JSON.parse(record.data.Comanda).Leche == "de Vaca"}
-								<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white;">🐮</b>
-							{/if}
-
-							{#if JSON.parse(record.data.Comanda).Notas != "" && JSON.parse(record.data.Comanda).Notas != undefined}
-								<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white; font-size: 21.5px;">👀<sub>N</sub></b>
-							{/if}
-							{#if JSON.parse(record.data.Comanda).Leche != "Agua" && JSON.parse(record.data.Comanda).Leche != "de Vaca" && JSON.parse(record.data.Comanda).Endulzante != undefined}
-								<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white; font-size: 21.5px;">👀<sub>L</sub></b>
-							{/if}
-							{#if JSON.parse(record.data.Comanda).Receta == "Si"}
-								<b style="border-radius: 5px; border: 1px solid red; padding: 1px; background: white;">🍪</b>
-							{/if}
-							<b style="border-radius: 5px; background: red; padding: 6px 3px; color: white; font-size: 17px;">{record.data.Estado}</b>
-						</div>
-					{/if}
+					<b
+						style:background={ORDER_STATES_MAP[record.data.Estado]}
+						style="text-align: center; border-radius: 5px; padding: 6px 3px; color: white; font-size: 17px;"
+						>{record.data.Estado}</b
+					>
 					<!-- {record.data.Comanda} -->
 				</a>
 			{/each}
@@ -356,9 +308,7 @@
 			{m.db_configure_in_settings()}
 		</p>
 
-		<a href="/settings/database" class="button">
-			Ir a Ajustes de Base de Datos
-		</a>
+		<a href="/settings/database" class="button"> Ir a Ajustes de Base de Datos </a>
 	</div>
 {/if}
 
@@ -366,12 +316,14 @@
 	:global(section.content:has(.duoshell)) {
 		padding: 0 !important;
 	}
+	div.content {
+		padding: 0 !important;
+	}
 
 	.price {
 		text-align: right;
 		white-space: nowrap;
 	}
-
 
 	.no-db-warning {
 		padding: 20px;

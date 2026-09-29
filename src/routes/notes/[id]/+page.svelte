@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { getActiveDb, getActiveDbConfig, safeRandomString } from '$lib/db';
 	import SvgIcon from '@jamescoyle/svelte-icon';
-	import { mdiArrowLeft, mdiContentSave, mdiDelete, mdiNote } from '@mdi/js';
+	import { mdiArrowLeft, mdiContentSave, mdiDelete, mdiNote, mdiPrinter } from '@mdi/js';
 	import FormSubmitButton from '$lib/comp/buttons/FormSubmitButton.svelte';
 	import PersonSelector from '$lib/comp/PersonSelector.svelte';
 	import ActionButton from '$lib/comp/buttons/ActionButton.svelte';
@@ -133,12 +133,17 @@
 
 {#if dbInstance}
 	<form onsubmit={saveNote}>
-		<textarea class="title" bind:value={asunto} placeholder="Título de la nota" required></textarea>
+		<textarea rows="1" class="title" bind:value={asunto} placeholder="Título de la nota" required></textarea>
 		<textarea class="body" bind:value={contenido} placeholder="Escribe el contenido..."></textarea>
 
 		<div class="actions">
 			<FormSubmitButton label={'Guardar'} icon={mdiContentSave} />
-			{#if !isNew}
+			<ActionButton
+				onclick={() => {window.print()}}
+				icon={mdiPrinter}
+				label="Imprimir"
+			/>
+			{#if isNew }
 				<ActionButton
 					onclick={deleteNote}
 					icon={mdiDelete}
@@ -155,16 +160,25 @@
 		height: 100%;
 		display: flex;
 		flex-direction: column;
-		gap: 5px;
+		gap: 2.5px;
 	}
 	textarea.title {
+		background-color: white !important;
+		border: none;
+		border-left: 5px solid var(--accent);
 		font-size: 22.5px;
-		padding: 4px;
+		padding: 8px;
 		margin: 0;
+		field-sizing: content;
 	}
 	textarea.body {
+		background-color: white;
+		border: none;
+		border-left: 5px solid var(--accent);
 		flex: 1;
 		margin: 0;
+		font-size: 17.5px;
+		line-height: 1.75;
 	}
 	.actions {
 		display: flex;
@@ -172,5 +186,10 @@
 		flex-direction: row;
 		width: 100%;
 		justify-content: space-between;
+	}
+	@media print {
+		.actions {
+			display: none;
+		}
 	}
 </style>

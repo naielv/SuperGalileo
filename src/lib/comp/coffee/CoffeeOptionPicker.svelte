@@ -9,8 +9,8 @@
 	}
 </script>
 
-<div class="picker" class:open>
-	<button type="button" class="picker-summary" onclick={() => (open = !open)} aria-expanded={open}>
+<details class="picker">
+	<summary class="picker-summary">
 		<span class="picker-label">
             <img src={icon} alt="" />
             {label}
@@ -26,34 +26,35 @@
 			{/if}
 		</span>
 		<span class="chevron" aria-hidden="true">{current ? '✓' : '⌄'}</span>
-	</button>
+	</summary>
 
-	{#if open}
-		<div class="options" role="listbox" aria-label={label}>
-			{#each options as option}
-				<button
-					type="button"
-					class:selected={selected === option.value}
-					onclick={() => selectOption(option.value)}
-					role="option"
-					aria-selected={selected === option.value}
-				>
-					<span class="icon-strip">
-						{#each option.icons as icon}
-							<img src={icon} alt="" />
-						{/each}
-					</span>
-					<span>{option.label || option.value}</span>
-				</button>
-			{/each}
-		</div>
-	{/if}
-</div>
+	<div class="options" role="listbox" aria-label={label}>
+		{#each options as option}
+			<button
+				type="button"
+				class:selected={selected === option.value}
+				onclick={() => selectOption(option.value)}
+				role="option"
+				aria-selected={selected === option.value}
+			>
+				<span class="icon-strip">
+					{#each option.icons as icon}
+						<img src={icon} alt="" />
+					{/each}
+				</span>
+				<span>{option.label || option.value}</span>
+			</button>
+		{/each}
+	</div>
+</details>
 
 <style>
 	.picker {
 		position: relative;
 		width: 100%;
+		border: 2px solid black;
+		border-radius: 5px;
+		overflow: hidden;
 	}
 	.picker-summary {
 		width: 100%;
@@ -63,8 +64,6 @@
 		align-items: center;
 		gap: 10px;
 		padding: 7px 10px;
-		border: 1px solid #94a3b8;
-		border-radius: 5px;
 		background: #fff;
 		color: inherit;
 		text-align: left;
@@ -110,19 +109,11 @@
 		line-height: 1;
 	}
 	.options {
-		position: absolute;
-		z-index: 10;
-		top: calc(100% + 4px);
-		left: 0;
-		right: 0;
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
 		gap: 6px;
 		padding: 8px;
-		border: 1px solid #94a3b8;
-		border-radius: 5px;
-		background: #fff;
-		box-shadow: 0 8px 20px #0002;
+		border-top: 1px solid black;
 	}
 	.options button {
 		min-height: 64px;
@@ -131,17 +122,17 @@
 		align-items: center;
 		gap: 8px;
 		padding: 7px;
-		border: 1px solid #cbd5e1;
+		border: 3px solid #aaa;
+		background: #eeeeee;
 		border-radius: 4px;
-		background: #f8fafc;
 		color: inherit;
 		cursor: pointer;
 		text-align: left;
+		border-radius: 17.5px;
 	}
-	.options button:hover,
 	.options button.selected {
-		border-color: #2a4f90;
-		background: #e0ecff;
+		border-color: #d00;
+		background: #fdd;
 	}
     .options button span{
         text-align: center;

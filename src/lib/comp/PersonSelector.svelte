@@ -59,8 +59,8 @@
 	});
 </script>
 
-<div class="picker" class:open class:required={required && selectedForUi === null}>
-	<button type="button" class="picker-summary" onclick={() => (open = !open)} aria-expanded={open}>
+<details class="picker" class:required={required && selectedForUi === null}>
+	<summary class="picker-summary" onclick={() => (open = !open)} aria-expanded={open}>
 		<span class="picker-label">
 			<img src={selectedForUi?.image || userGenericIcon} alt="" />
 			{label}</span>
@@ -70,7 +70,7 @@
 			{/if}
 		</span>
 		<span class="chevron" aria-hidden="true">{selectedForUi ? '✓' : '⌄'}</span>
-	</button>
+	</summary>
 
 	{#if open}
 		<div class="options" role="listbox" aria-label={label}>
@@ -95,23 +95,24 @@
 			{/if}
 		</div>
 	{/if}
-</div>
+</details>
 
 <style>
 	.picker {
 		position: relative;
 		width: 100%;
+		border: 2px solid black;
+		border-radius: 5px;
+		overflow: hidden;
 	}
 	.picker-summary {
 		width: 100%;
 		/* min-height: 48px; */
-		display: flex;
-		justify-content: space-between;
+        display: flex;
+        justify-content: space-between;
 		align-items: center;
 		gap: 10px;
 		padding: 7px 10px;
-		border: 1px solid #94a3b8;
-		border-radius: 5px;
 		background: #fff;
 		color: inherit;
 		text-align: left;
@@ -146,51 +147,49 @@
 		line-height: 1;
 	}
 	.options {
-		position: absolute;
-		z-index: 10;
-		top: calc(100% + 4px);
-		left: 0;
-		right: 0;
 		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
 		gap: 6px;
 		padding: 8px;
-		border: 1px solid #94a3b8;
-		border-radius: 5px;
-		background: #fff;
-		box-shadow: 0 8px 20px #0002;
+		border-top: 1px solid black;
 	}
 	.options h3 {
 		grid-column: 1 / -1;
-		margin: 8px 2px 0;
-		padding-bottom: 4px;
-		border-bottom: 1px solid #cbd5e1;
-		font-size: 14px;
+		margin: 0;
+		padding-top: 18px;
+		padding-bottom: 0;
+		font-size: 24px;
+		text-align: center;
+		border-top: 1px solid #cbd5e1;
+	}
+	.options h3:first-of-type {
+		border-top: none !important;
+		padding-top: 4px;
 	}
 	.options button {
 		min-height: 64px;
 		display: flex;
-		flex-direction: column;
+        flex-direction: column;
 		align-items: center;
 		gap: 8px;
 		padding: 7px;
-		border: 1px solid #cbd5e1;
+		border: 3px solid #aaa;
+		background: #eeeeee;
 		border-radius: 4px;
-		background: #f8fafc;
 		color: inherit;
 		cursor: pointer;
 		text-align: left;
+		border-radius: 17.5px;
 	}
-	.options button:hover,
 	.options button.selected {
-		border-color: #2a4f90;
-		background: #e0ecff;
+		border-color: #d00;
+		background: #fdd;
 	}
+    .options button span{
+        text-align: center;
+    }
 	.options button img {
 		width: 46px;
 		height: 46px;
-	}
-	.options button span {
-		text-align: center;
 	}
 </style>

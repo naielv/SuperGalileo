@@ -1,39 +1,66 @@
 <script>
-	const LAYERED_BASE =
-		'/static/ico/layered1/';
+	const LAYERED_BASE = '/static/ico/layered1/';
 
 	let { order = {}, size = 72 } = $props();
 
-	const selectionMap = {
-		'ColaCao con leche': 'Selección-ColaCao.png',
-		Infusión: 'Selección-Infusion.png',
-		'Café con leche': 'Selección-CaféLeche.png',
-		'Solo Leche': 'Selección-Leche.png',
-		'Solo café (sin leche)': 'Selección-CaféSolo.png'
+	const layerDefinitions = {
+		Selección: {
+			'ColaCao con leche': 'Selección-ColaCao.png',
+			'Infusión': 'Selección-Infusion.png',
+			'Café con leche': 'Selección-CaféLeche.png',
+			'Solo Leche': 'Selección-Leche.png',
+			'Solo café (sin leche)': 'Selección-CaféSolo.png'
+		},
+
+		Endulzante: {
+			'Az. Blanco': 'Azucar-Az. Blanco.png',
+			'Az. Moreno': 'Azucar-Az. Moreno.png',
+			'Edulcorante': 'Azucar-Edulcorante.png',
+			'Sacarina': 'Azucar-Sacarina.png',
+			'Stevia (Gotas)': 'Azucar-Stevia (Gotas).png',
+			'Stevia (Pastillas)': 'Azucar-Stevia (Pastillas).png',
+			'Sin': 'Azucar-Sin.png',
+		},
+
+		Cafeina: {
+			'Con': 'Cafeina-Con.png',
+			'Sin': 'Cafeina-Sin.png',
+		},
+
+		Leche: {
+			'Agua': 'Leche-Agua.png',
+			'de Vaca': 'Leche-de Vaca.png',
+			'Sin lactosa': 'Leche-Sin lactosa.png',
+			'Vegetal': 'Leche-Vegetal.png',
+		},
+
+		Temperatura: {
+			'Caliente': 'Temperatura-Caliente.png',
+			'Templado': 'Temperatura-Templado.png',
+			'Frío': 'Temperatura-Frío.png',
+		},
+
+		Tamaño: {
+			'Pequeño': 'Tamaño-Pequeño.png',
+			'Grande': 'Tamaño-Grande.png',
+		}
 	};
 
-	const layerDefinitions = [
-		['Selección', (value) => selectionMap[value], '☕'],
-		['Café', (value) => `Café-${value}.png`, '☕'],
-		['Endulzante', (value) => `Azucar-${value}.png`, '✦'],
-		['Cafeina', (value) => `Cafeina-${value}.png`, '●'],
-		['Leche', (value) => `Leche-${value}.png`, '🥛'],
-		['Temperatura', (value) => `Temperatura-${value}.png`, '♨'],
-		['Tamaño', (value) => `Tamaño-${value}.png`, '↕']
-	];
+	const getLayerSrc = (key) => {
+		const value = order?.[key];
+		const filename = layerDefinitions[key]?.[value];
 
-	let layers = $derived(
-		layerDefinitions
-			.map(([key, filename, fallback]) => {
-				const value = order?.[key];
-				if (!value) return null;
-				const mappedFilename = filename(value);
-				return mappedFilename
-					? { key, src: `${LAYERED_BASE}${encodeURI(mappedFilename)}`, fallback }
-					: null;
-			})
-			.filter(Boolean)
-	);
+		return filename
+			? `${LAYERED_BASE}${encodeURI(filename)}`
+			: null;
+	};
+
+	let seleccionSrc = $derived(getLayerSrc('Selección'));
+	let endulzanteSrc = $derived(getLayerSrc('Endulzante'));
+	let cafeinaSrc = $derived(getLayerSrc('Cafeina'));
+	let lecheSrc = $derived(getLayerSrc('Leche'));
+	let temperaturaSrc = $derived(getLayerSrc('Temperatura'));
+	let tamanoSrc = $derived(getLayerSrc('Tamaño'));
 </script>
 
 <div
@@ -41,16 +68,71 @@
 	style={`width: ${size}px; height: ${size}px;`}
 	title={order?.Selección || 'Comanda'}
 >
-	{#each layers as layer, index}
-		<span class="fallback" style={`z-index: ${index + 1};`}>?</span>
+	{#if seleccionSrc}
 		<img
 			class="layer"
-			style={`z-index: ${index + 10};`}
-			src={layer.src}
+			style="z-index: 10;"
+			src={seleccionSrc}
 			alt=""
 			onerror={(event) => (event.currentTarget.style.display = 'none')}
+			onload={(event) => (event.currentTarget.style.display = '')}
 		/>
-	{/each}
+	{/if}
+
+	{#if endulzanteSrc}
+		<img
+			class="layer"
+			style="z-index: 12;"
+			src={endulzanteSrc}
+			alt=""
+			onerror={(event) => (event.currentTarget.style.display = 'none')}
+			onload={(event) => (event.currentTarget.style.display = '')}
+		/>
+	{/if}
+
+	{#if cafeinaSrc && ["Solo café (sin leche)", "Café con leche"].includes(order?.Selección)}
+		<img
+			class="layer"
+			style="z-index: 13;"
+			src={cafeinaSrc}
+			alt=""
+			onerror={(event) => (event.currentTarget.style.display = 'none')}
+			onload={(event) => (event.currentTarget.style.display = '')}
+		/>
+	{/if}
+
+	{#if lecheSrc}
+		<img
+			class="layer"
+			style="z-index: 14;"
+			src={lecheSrc}
+			alt=""
+			onerror={(event) => (event.currentTarget.style.display = 'none')}
+			onload={(event) => (event.currentTarget.style.display = '')}
+		/>
+	{/if}
+
+	{#if temperaturaSrc}
+		<img
+			class="layer"
+			style="z-index: 15;"
+			src={temperaturaSrc}
+			alt=""
+			onerror={(event) => (event.currentTarget.style.display = 'none')}
+			onload={(event) => (event.currentTarget.style.display = '')}
+		/>
+	{/if}
+
+	{#if tamanoSrc}
+		<img
+			class="layer"
+			style="z-index: 16;"
+			src={tamanoSrc}
+			alt=""
+			onerror={(event) => (event.currentTarget.style.display = 'none')}
+			onload={(event) => (event.currentTarget.style.display = '')}
+		/>
+	{/if}
 </div>
 
 <style>
@@ -63,17 +145,12 @@
 		border-radius: 4px;
 		background: #fff;
 	}
-	.layer,
-	.fallback {
+
+	.layer {
 		position: absolute;
 		inset: 0;
 		width: 100%;
 		height: 100%;
 		object-fit: contain;
-	}
-	.fallback {
-		display: grid;
-		place-items: center;
-		font-size: 30px;
 	}
 </style>

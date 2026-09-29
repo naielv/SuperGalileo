@@ -4,6 +4,13 @@ export const COFFEE_PREFIX = 'supercafe:';
 
 export const ORDER_STATES = ['Pedido', 'En preparación', 'Listo', 'Entregado', 'Deuda'];
 
+export const ORDER_STATES_MAP = {
+	Pedido: 'black',
+	'En preparación': 'red',
+	Listo: 'orange',
+	Entregado: 'green',
+	Deuda: 'purple'
+};
 export const DEFAULT_COFFEE_PRICES = {
 	servicio_base: 10,
 	leche_pequena: 15,
@@ -97,7 +104,10 @@ export const ORDER_OPTIONS = {
 	},
 	[m.recipe()]: {
 		icon: '/static/ico/cookies.png',
-		options: [option('Si', m.with(), '/static/ico/add.png'), option('No', m.without(), '/static/ico/delete.png')]
+		options: [
+			option('Si', m.with(), '/static/ico/add.png'),
+			option('No', m.without(), '/static/ico/delete.png')
+		]
 	}
 };
 
@@ -170,5 +180,12 @@ export function formatDate(dateString) {
 	// Si es un año diferente, usamos el estilo mediano estándar (incluye el año)
 	return date.toLocaleString(getLocale(), {
 		dateStyle: 'medium'
+	});
+}
+
+export function getOrderPrice(prices, record) {
+	return (calculateOrderPrice(parseOrder(record.data?.Comanda), prices) / 100).toLocaleString("es-ES", {
+		style: 'currency',
+		currency: 'EUR'
 	});
 }

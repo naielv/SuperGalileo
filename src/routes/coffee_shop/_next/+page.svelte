@@ -1,6 +1,5 @@
 <script>
-	const PREFIX = 'notas';
-
+	const PREFIX = 'supercafe';
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 
@@ -11,9 +10,13 @@
 	import {
 		calculateOrderPrice,
 		DEFAULT_COFFEE_PRICES,
+		getOrderPrice,
+		ORDER_STATES_MAP,
 		orderSummary,
 		parseOrder
 	} from '$lib/coffee';
+	import LinkButton from '$lib/comp/buttons/LinkButton.svelte';
+	import { mdiCoffeeMaker, mdiPlus } from '@mdi/js';
 
 	let { children } = $props();
 
@@ -23,6 +26,7 @@
 	let people = $state(new Map());
 	let prices = $state(DEFAULT_COFFEE_PRICES);
 	let sidebar = $state(true);
+	let showIcons = $state(false);
 
 	let changesFeed = null;
 
@@ -53,7 +57,7 @@
 			dbKey = config.encryptionKey;
 
 			await loadRecords();
-			await Promise.all([loadPeople()]);
+			await Promise.all([loadPeople(), loadPrices()]);
 
 			startChanges();
 		} catch (error) {
@@ -88,7 +92,7 @@
 		const ids = [
 			...new Set(
 				records
-					.map((record) => record.data?.Autor)
+					.map((record) => record.data?.Persona)
 					.filter(Boolean)
 					.map((id) => `personas:${id}`)
 			)
@@ -156,6 +160,26 @@
 		changesFeed = null;
 	}
 
+	async function loadPerson(record) {
+		const personId = record.data?.Persona;
+
+		if (!personId || !db) return;
+
+		const id = `personas:${personId}`;
+
+		if (people.has(id)) return;
+
+		try {
+			const person = await db.get(id, { attachments: true, binary: true });
+
+			people = new Map(people).set(id, person);
+		} catch (error) {
+			if (error.status !== 404) {
+				console.error(`Error cargando ${id}:`, error);
+			}
+		}
+	}
+
 	async function handleChange({ id, deleted, doc }) {
 		if (!id.startsWith(`${PREFIX}:`)) return;
 
@@ -181,43 +205,12 @@
 		}
 	}
 
-	async function loadPerson(record) {
-		const personId = record.data?.Persona;
-
-		if (!personId || !db) return;
-
-		const id = `personas:${personId}`;
-
-		if (people.has(id)) return;
-
-		try {
-			const person = await db.get(id);
-
-			people = new Map(people).set(id, person);
-		} catch (error) {
-			if (error.status !== 404) {
-				console.error(`Error cargando ${id}:`, error);
-			}
-		}
-	}
-
-	function getPerson(personId) {
-		return people.get(`personas:${personId}`);
-	}
-
-	function getPersonId(record) {
-		return record?._id.split(':', 2)[1];
-	}
-
-	function getPhotoUrl(person) {
-		const attachment = person?._attachments?.foto;
-
-		if (!attachment?.data) return '';
-
-		return URL.createObjectURL(attachment.data);
+	function getPerson(record) {
+		return people.get(`personas:${record.data?.Persona}`);
 	}
 
 	onMount(() => {
+		window.dispatchEvent(new CustomEvent('sidebar-closed'));
 		loadActiveDatabase();
 
 		for (const [event, handler] of Object.entries(dbEvents)) {
@@ -234,82 +227,68 @@
 	});
 </script>
 
-{#if db}
-	<div class="duoshell" class:collapsed={!sidebar}>
-		<div class="recordList">
-			<div class="title">
-				<h3>Notas</h3>
-				<a href="/notes/_new">Nuevo</a>
-			</div>
+<div class="co">
+    <h1>Comanda creada, ¿Que quieres hacer?</h1>
+    <div class="co2">
+        <LinkButton
+            href="/coffee_shop/_new"
+            label="Nueva comanda"
+            icon={mdiPlus}
+            background="green"
+        />
+        <LinkButton
+            href="/coffee_shop"
+            label="Preparar café"
+            icon={mdiCoffeeMaker}
+        />
+    </div>
 
-			{#each records.toSorted((a, b) => a.data.Asunto.localeCompare(b.data.Asunto)) as record}
-				{@const person = getPerson(record.data?.Autor)}
-				{@const personId = getPersonId(person)}
-				{@const isActive = page.params.id === record._id.split(':')[1]}
-
-				<a
-					class="record"
-					class:active={isActive}
-					href={`/notes/${record._id.split(':')[1]}`}
-					//style="flex-direction: column; align-items: stretch; gap: 2.5px"
-				>
-					<!--<div class="rowflex">-->
-						{#if person && false}
-							<div style="display: flex; flex-direction: column; gap: 2.5px; text-align: center">
-								{#if person._attachments?.foto}
-									<img
-										src={getPhotoUrl(person)}
-										alt={person.data?.Nombre ?? ''}
-										loading="lazy"
-										height="64"
-									/>
-								{/if}
-							</div>
-						{/if}
-
-						<small>
-							<i>{person?.data?.Nombre}</i>
-						</small>
-						<div class="record-info">
-							<span>{record.data?.Asunto}</span>
-						</div>
-					<!--</div>-->
-				</a>
-			{/each}
-		</div>
-
-		<div class="content">
-			{@render children()}
-		</div>
-	</div>
-{:else}
-	<div class="no-db-warning">
-		<p>
-			{m.db_not_connected_to_any()} <br />
-			{m.db_configure_in_settings()}
-		</p>
-
-		<a href="/settings/database" class="button"> Ir a Ajustes de Base de Datos </a>
-	</div>
-{/if}
+    <div class="co2">
+        {#each records.toSorted((a, b) => b.data.Fecha.localeCompare(a.data.Fecha) || getPerson(a)?.Region?.localeCompare(getPerson(b)?.Region) || getPerson(a)?.Nombre?.localeCompare(getPerson(b)?.Nombre)) as record}
+            {@const person = getPerson(record)}
+            {@const price = getOrderPrice(prices, record)}
+            {#if record?.Fecha == new Date().toISOString().slice(0, 10)}
+                <div style="background-color: white; border-radius: 7.5px; display: inline-flex; flex-direction: column; overflow: hidden;">
+                    <b
+                        style:background={ORDER_STATES_MAP[record.data.Estado]}
+                        style="text-align: center; padding: 6px 3px; color: white; font-size: 17px;"
+                        >{record?.data.Estado}</b
+                    >
+                    
+                    <div style="display: flex; flex-direction: row; gap: 7px; padding: 7.5px; ">
+                        <div style="display: flex; flex-direction: column;">
+                            <b>{person?.data?.Nombre ?? ''}</b>
+                            <small><i>{person?.data?.Region}</i></small>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; text-align: right;">
+                            <span>{orderSummary(record?.data)}</span>
+                            <small><i>{record.data?.Fecha}</i></small>
+                        </div>
+                    </div>
+                    <b style="text-align: center; border-top: 1px solid lightgray; padding-top: 5px; padding-bottom: 7.5px; ">{price}</b>
+                </div>
+            {/if}
+        {/each}
+    </div>
+</div>
 
 <style>
-	:global(section.content:has(.duoshell)) {
-		padding: 0 !important;
-	}
-
-	div.content {
-		background-color: wheat;
+	div.co {
 		padding: 15px;
-	}
-	@media print {
-		div.content {
-			background-color: transparent;
-		padding: 2.5px;
-		}
-	}
-
-	.no-db-warning {
-		padding: 20px;
-	}
+        background-color: wheat;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+  	}
+    div.co2 {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: center;
+        align-content: flex-start;
+        gap: 5px;
+    }
 </style>

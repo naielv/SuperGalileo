@@ -70,7 +70,18 @@
 	@media print {
 		.shell {
 			background-color: white;
-			height: auto;
+			height: 100%;
+		}
+		.shell .row {
+			height: 100%;
+			background-color: white;
+		}
+		.shell :global(.duoshell) {
+			background-color: white;
+			grid-template-columns: 1fr;
+		}
+		.shell :global(.duoshell .recordList) {
+			display: none;
 		}
 	}
 </style>
