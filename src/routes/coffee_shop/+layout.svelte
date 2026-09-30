@@ -25,7 +25,6 @@
 	let people = $state(new Map());
 	let prices = $state(DEFAULT_COFFEE_PRICES);
 	let sidebar = $state(true);
-	let showIcons = $state(false);
 
 	let changesFeed = null;
 
@@ -241,7 +240,6 @@
 	<div class="duoshell" class:collapsed={!sidebar}>
 		<div class="recordList">
 			<div class="title">
-				<input type="checkbox" title="Mostrar comanda" bind:checked={showIcons} />
 				<h3>Comandas</h3>
 				<a href="/coffee_shop/_new">Nuevo</a>
 			</div>
