@@ -5,16 +5,16 @@
 	import { page } from '$app/state';
 
 	import { getActiveDb, getActiveDbConfig, decryptValue } from '$lib/db';
+	import { toast } from 'svelte5-toaster';
 
 	import { m } from '$lib/paraglide/messages';
 
 	import {
-		calculateOrderPrice,
 		DEFAULT_COFFEE_PRICES,
 		getOrderPrice,
 		ORDER_STATES_MAP,
 		orderSummary,
-		parseOrder
+		runCobroAuto
 	} from '$lib/coffee';
 
 	let { children } = $props();
@@ -25,6 +25,7 @@
 	let people = $state(new Map());
 	let prices = $state(DEFAULT_COFFEE_PRICES);
 	let sidebar = $state(true);
+	let cobrando = $state(false);
 
 	let changesFeed = null;
 
@@ -131,6 +132,48 @@
 			if (error.status !== 404) {
 				console.error('Error cargando precios:', error);
 			}
+		}
+	}
+
+	// Cobro auto: delega en el helper compartido de $lib/coffee (runCobroAuto),
+	// que implementa la lógica portada de TeleSec.
+	async function cobroAuto() {
+		if (!db) {
+			toast.error('No hay ninguna base de datos activa.');
+			return;
+		}
+
+		const targets = records.filter((r) => {
+			const estado = r.data?.Estado;
+			return estado === 'Entregado' || estado === 'Deuda';
+		});
+
+		if (targets.length === 0) {
+			toast.info('No hay comandas cobrables (Entregadas o en deuda).');
+			return;
+		}
+
+		if (!confirm('¿Cobrar automáticamente todas las comandas y deudas a quienes tengan saldo suficiente?')) {
+			return;
+		}
+
+		cobrando = true;
+		try {
+			const res = await runCobroAuto(db, prices);
+
+			// Refrescar listado y personas
+			await loadRecords();
+			await loadPeople();
+
+			toast.success(
+				`Cobro auto completado: ${res.cobradas} cobradas, ${res.sinSaldo} sin saldo suficiente, ${res.errores} errores. ` +
+					`Total cobrado: ${(res.totalCentimos / 100).toFixed(2)} €`
+			);
+		} catch (e) {
+			console.warn('Cobro auto: error', e);
+			toast.error('Error durante el cobro automático.');
+		} finally {
+			cobrando = false;
 		}
 	}
 
@@ -241,7 +284,7 @@
 		<div class="recordList">
 			<div class="title">
 				<h3>Comandas</h3>
-				<a href="/coffee_shop/_new">Nuevo</a>
+				<a href="/coffee_shop/orders/_new">Nuevo</a>
 			</div>
 
 			{#each records.toSorted((a, b) => b.data.Fecha.localeCompare(a.data.Fecha) || getPerson(a)?.Region?.localeCompare(getPerson(b)?.Region) || getPerson(a)?.Nombre?.localeCompare(getPerson(b)?.Nombre)) as record}
@@ -254,7 +297,7 @@
 				<a
 					class="record"
 					class:active={isActive}
-					href={`/coffee_shop/${personId}`}
+					href={`/coffee_shop/orders/${personId}`}
 					style="flex-direction: column; align-items: stretch; gap: 2.5px"
 				>
 					<div class="rowflex">
@@ -282,7 +325,7 @@
 						</div>
 
 						<b class="price" style:color={canPay ? 'green' : 'red'}>
-							{price} €
+							{price}
 						</b>
 					</div>
 					<b
@@ -321,6 +364,23 @@
 	.price {
 		text-align: right;
 		white-space: nowrap;
+	}
+
+	button.cobro-auto {
+		text-decoration: none;
+		background-color: red;
+		color: white;
+		border: none;
+		border-radius: 5px;
+		font-size: 15px;
+		padding: 5px 7.5px;
+		line-height: normal;
+		cursor: pointer;
+	}
+
+	button.cobro-auto:disabled {
+		opacity: 0.6;
+		cursor: default;
 	}
 
 	.no-db-warning {

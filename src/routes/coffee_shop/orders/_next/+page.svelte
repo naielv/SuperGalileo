@@ -231,13 +231,13 @@
     <h1>Comanda creada, ¿Que quieres hacer?</h1>
     <div class="co2">
         <LinkButton
-            href="/coffee_shop/_new"
+            href="/coffee_shop/orders/_new"
             label="Nueva comanda"
             icon={mdiPlus}
             background="green"
         />
         <LinkButton
-            href="/coffee_shop"
+            href="/coffee_shop/orders"
             label="Preparar café"
             icon={mdiCoffeeMaker}
         />

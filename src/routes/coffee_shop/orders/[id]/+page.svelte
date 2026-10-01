@@ -124,9 +124,9 @@
 			await dbInstance.put({ _id: docId, ...(isNew ? {} : { _rev: order._rev }), data });
 			toast.success('Comanda guardada correctamente.');
 			if (isNew) {
-				goto('/coffee_shop/_next')
+				goto('/coffee_shop/orders/_next')
 			} else {
-				goto('/coffee_shop/' + id)
+				goto('/coffee_shop/orders/' + id)
 			}
 		} catch (error) {
 			toast.error(`No se pudo guardar la comanda: ${error.message}`);
@@ -140,7 +140,7 @@
 		if (isNew || !confirm('¿Eliminar esta comanda?')) return;
 		try {
 			await dbInstance.remove({ _id: order._id, _rev: order._rev });
-			goto('/coffee_shop');
+			goto('/coffee_shop/orders');
 		} catch (error) {
 			toast.error(`No se pudo eliminar la comanda: ${error.message}`);
 		}

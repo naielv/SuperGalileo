@@ -218,7 +218,7 @@
                         <div class="action-links">
                             <a
                                 class="icon-button"
-                                href={`/coffee_shop/${encodeURIComponent(order._id.replace(COFFEE_PREFIX, ''))}`}
+                                href={`/coffee_shop/orders/${encodeURIComponent(order._id.replace(COFFEE_PREFIX, ''))}`}
                                 aria-label={m.edit()}
                                 title={m.edit()}><SvgIcon path={mdiPencil} type="mdi" size="1.1em" /></a
                             >

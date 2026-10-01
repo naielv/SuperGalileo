@@ -1,7 +1,7 @@
 <script>
 	import LinkButton from '$lib/comp/buttons/LinkButton.svelte';
 	import { m } from '$lib/paraglide/messages';
-	import { mdiLogin, mdiAccountGroup, mdiSchool, mdiAccountSupervisorCircle, mdiCoffee, mdiWallet, mdiWarehouse, mdiNote, mdiStar, mdiQrcodeScan, mdiCog, mdiNotebook } from '@mdi/js';
+	import { mdiLogin, mdiAccountGroup, mdiSchool, mdiAccountSupervisorCircle, mdiCoffee, mdiWallet, mdiWarehouse, mdiNote, mdiStar, mdiQrcodeScan, mdiCog, mdiNotebook, mdiCreditCard, mdiSilverwareForkKnife } from '@mdi/js';
 </script>
 
 <h1>¡Te damos la bienvenida a SuperGalileo!</h1>
@@ -11,7 +11,8 @@
 	<LinkButton background="black" href="/classroom_management" icon={mdiSchool} label={m.classroom_management()} />
 	<LinkButton href="/coffee_shop" icon={mdiCoffee} label={m.coffee_shop()} />
 	<LinkButton background="black" href="/wallets" icon={mdiAccountSupervisorCircle} label={m.wallets()} />
-	<LinkButton background="black" href="/food_court" icon={mdiWallet} label={m.food_court()} />
+	<LinkButton href="/payments" icon={mdiCreditCard} label="Pagos" />
+	<LinkButton href="/comedor" icon={mdiSilverwareForkKnife} label={m.food_court()} />
 	<LinkButton background="black" href="/warehouse" icon={mdiWarehouse} label={m.warehouse()} />
 	<LinkButton href="/notes" icon={mdiNote} label={m.notes()} />
 	<LinkButton background="black" href="/activities" icon={mdiStar} label={m.activities()} />

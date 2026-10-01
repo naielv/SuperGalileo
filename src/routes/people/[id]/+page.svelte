@@ -7,13 +7,14 @@
 
 	import SvgIcon from '@jamescoyle/svelte-icon';
 	import {
-		mdiAccount,
-		mdiArrowLeft,
-		mdiBadgeAccount,
-		mdiContentSave,
-		mdiDelete,
-		mdiEye,
-		mdiEyeOff
+			mdiAccount,
+			mdiArrowLeft,
+			mdiBadgeAccount,
+			mdiContentSave,
+			mdiDelete,
+			mdiEye,
+			mdiEyeOff,
+			mdiWallet
 	} from '@mdi/js';
 
 	import FormSubmitButton from '$lib/comp/buttons/FormSubmitButton.svelte';
@@ -272,6 +273,11 @@
 							icon={mdiDelete}
 							background="#9f1a1a"
 							onclick={deletePerson}
+						/>
+						<LinkButton
+							href={`/people/${id}/payments`}
+							label="Movimientos de pagos"
+							icon={mdiWallet}
 						/>
 					{/if}
 				</div>

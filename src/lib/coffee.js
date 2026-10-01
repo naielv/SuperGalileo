@@ -1,4 +1,5 @@
 import { m } from './paraglide/messages';
+import { safeRandomString } from './db';
 
 export const COFFEE_PREFIX = 'supercafe:';
 
@@ -188,4 +189,112 @@ export function getOrderPrice(prices, record) {
 		style: 'currency',
 		currency: 'EUR'
 	});
+}
+
+/**
+ * Cobro auto de SuperCafé (portado de TeleSec).
+ *
+ * Recorre las comandas 'Entregado' o 'Deuda' y, por cada una, descuenta el
+ * importe del saldo del monedero de la persona. Si el saldo no llega, la
+ * comanda queda/pasa a 'Deuda'. Al cobrar se registra una transacción en
+ * `pagos:` (esquema compatible con TeleSec) y se borra la comanda.
+ *
+ * @param {object} db  Instancia PouchDB ya envuelta (con encriptación) de SG.
+ * @param {object} prices  Precios normalizados del café (en céntimos).
+ * @returns {Promise<{cobradas:number, sinSaldo:number, errores:number, totalCentimos:number}>}
+ */
+export async function runCobroAuto(db, prices) {
+	let cobradas = 0;
+	let sinSaldo = 0;
+	let errores = 0;
+	let totalCentimos = 0;
+
+	const result = await db.allDocs({
+		startkey: COFFEE_PREFIX,
+		endkey: `${COFFEE_PREFIX}\uffff`,
+		include_docs: true
+	});
+	const records = result.rows.map((row) => row.doc).filter(Boolean);
+
+	for (const rec of records) {
+		const personId = rec.data?.Persona;
+		if (!personId) {
+			errores++;
+			continue;
+		}
+
+		let comanda, person;
+		try {
+			// Leer versiones actuales para evitar conflictos de _rev y usar saldo fresco
+			[comanda, person] = await Promise.all([db.get(rec._id), db.get(`personas:${personId}`)]);
+		} catch (e) {
+			console.warn('Cobro auto: no se pudo leer', rec._id, e);
+			errores++;
+			continue;
+		}
+
+		const data = comanda.data || comanda;
+		const estado = data.Estado;
+		if (estado !== 'Entregado' && estado !== 'Deuda') continue; // cambió mientras tanto
+
+		const precioEur = calculateOrderPrice(parseOrder(data.Comanda), prices) / 100;
+		const balance = parseFloat(person.data?.Monedero_Balance || 0);
+
+		if (balance < precioEur) {
+			// Sin saldo suficiente: marcar como deuda si no lo estaba ya
+			if (estado !== 'Deuda') {
+				try {
+					await db.put({
+						_id: comanda._id,
+						_rev: comanda._rev,
+						data: { ...data, Estado: 'Deuda' }
+					});
+				} catch (e) {
+					console.warn('Cobro auto: error marcando deuda', comanda._id, e);
+					errores++;
+					continue;
+				}
+			}
+			sinSaldo++;
+			continue;
+		}
+
+		// Saldo suficiente: cobrar
+		try {
+			const nuevoSaldo = parseFloat((balance - precioEur).toFixed(2));
+
+			await db.put({
+				_id: person._id,
+				_rev: person._rev,
+				data: { ...person.data, Monedero_Balance: nuevoSaldo }
+			});
+
+			const ticketId = safeRandomString(16);
+			await db.put({
+				_id: `pagos:${ticketId}`,
+				data: {
+					Ticket: ticketId,
+					Fecha: new Date().toISOString(),
+					Tipo: 'Gasto',
+					Monto: precioEur,
+					Persona: personId,
+					Metodo: 'Tarjeta',
+					Notas: 'Cobro auto - ' + orderSummary(data),
+					Estado: 'Completado',
+					Origen: 'SuperCafé',
+					OrigenID: comanda._id
+				}
+			});
+
+			await db.remove({ _id: comanda._id, _rev: comanda._rev });
+
+			totalCentimos += Math.round(precioEur * 100);
+			cobradas++;
+		} catch (e) {
+			console.warn('Cobro auto: error al cobrar', comanda._id, e);
+			errores++;
+		}
+	}
+
+	return { cobradas, sinSaldo, errores, totalCentimos };
 }
