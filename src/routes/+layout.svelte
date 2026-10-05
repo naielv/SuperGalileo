@@ -7,29 +7,19 @@
 	import { Toaster } from 'svelte5-toaster'
 	let { children } = $props();
 
-	let currentSyncRandomInt = $state(null);
 </script>
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
 	<title>{m.app_name()}</title>
-	<meta name="theme-color" content={currentSyncRandomInt === null
-		? 'black'
-		: `hsl(${currentSyncRandomInt}deg 40% 30%)`} />
+	<meta name="theme-color" content="hsl(0deg 40% 30%)" />
 </svelte:head>
 
 <div
 	class="shell"
-	style:--accent={currentSyncRandomInt === null
-		? 'black'
-		: `hsl(${currentSyncRandomInt}deg 40% 30%)`}
+	style:--accent="hsl(0deg 40% 30%)"
 >
 	<Header
-		onDatabaseHashChange={(hash) => {
-			var multiplier = 8
-			currentSyncRandomInt = (hash * multiplier) % 360;
-			console.debug("Hue Change", {level: hash, hue: currentSyncRandomInt, multiplier: multiplier})
-		}}
 		toggleSidebar={() => {
 			window.dispatchEvent(new CustomEvent('sidebar-toggle'));
 		}}
