@@ -166,7 +166,6 @@
 	<p class="status-banner {feedback.type}">{feedback.message}</p>
 {/if}
 
-{#if dbInstance}
 	<form class="formflex" onsubmit={saveOrder}>
 		{#if !isNew}
 			<fieldset style="padding: 0;">
@@ -253,11 +252,6 @@
 			{/if}
 		</fieldset>
 	</form>
-{:else}
-	<div class="no-db-warning">
-		Configura una base de datos activa en <a href="/settings/database">Ajustes de Base de Datos</a>.
-	</div>
-{/if}
 
 <style>
 	fieldset {

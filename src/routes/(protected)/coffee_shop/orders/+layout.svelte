@@ -279,79 +279,68 @@
 	});
 </script>
 
-{#if db}
-	<div class="duoshell" class:collapsed={!sidebar}>
-		<div class="recordList">
-			<div class="title">
-				<h3>Comandas</h3>
-				<a href="/coffee_shop/orders/_new">Nuevo</a>
-			</div>
+<div class="duoshell" class:collapsed={!sidebar}>
+	<div class="recordList">
+		<div class="title">
+			<h3>Comandas</h3>
+			<a href="/coffee_shop/orders/_new">Nuevo</a>
+		</div>
 
-			{#each records.toSorted((a, b) => b.data.Fecha.localeCompare(a.data.Fecha) || getPerson(a)?.Region?.localeCompare(getPerson(b)?.Region) || getPerson(a)?.Nombre?.localeCompare(getPerson(b)?.Nombre)) as record}
-				{@const person = getPerson(record)}
-				{@const personId = getPersonId(record)}
-				{@const price = getOrderPrice(prices, record)}
-				{@const isActive = page.params.id === personId}
-				{@const canPay = person?.data?.Monedero_Balance >= price}
+		{#each records.toSorted((a, b) => b.data.Fecha.localeCompare(a.data.Fecha) || getPerson(a)?.Region?.localeCompare(getPerson(b)?.Region) || getPerson(a)?.Nombre?.localeCompare(getPerson(b)?.Nombre)) as record}
+			{@const person = getPerson(record)}
+			{@const personId = getPersonId(record)}
+			{@const price = getOrderPrice(prices, record)}
+			{@const isActive = page.params.id === personId}
+			{@const canPay = person?.data?.Monedero_Balance >= price}
 
-				<a
-					class="record"
-					class:active={isActive}
-					href={`/coffee_shop/orders/${personId}`}
-					style="flex-direction: column; align-items: stretch; gap: 2.5px"
-				>
-					<div class="rowflex">
-						{#if person}
-							<div style="display: flex; flex-direction: column; gap: 2.5px; text-align: center">
-								{#if person._attachments?.foto}
-									<img
-										src={getPhotoUrl(person)}
-										alt={person.data?.Nombre ?? ''}
-										loading="lazy"
-										height="64"
-									/>
-								{/if}
+			<a
+				class="record"
+				class:active={isActive}
+				href={`/coffee_shop/orders/${personId}`}
+				style="flex-direction: column; align-items: stretch; gap: 2.5px"
+			>
+				<div class="rowflex">
+					{#if person}
+						<div style="display: flex; flex-direction: column; gap: 2.5px; text-align: center">
+							{#if person._attachments?.foto}
+								<img
+									src={getPhotoUrl(person)}
+									alt={person.data?.Nombre ?? ''}
+									loading="lazy"
+									height="64"
+								/>
+							{/if}
 
-								<b>{person.data?.Nombre}</b>
-								<small><i>{person.data?.Region}</i></small>
-							</div>
-						{/if}
-
-						<div class="record-info">
-							<span>{orderSummary(record.data)}</span>
-							<small>
-								<i>{record.data?.Fecha}</i>
-							</small>
+							<b>{person.data?.Nombre}</b>
+							<small><i>{person.data?.Region}</i></small>
 						</div>
+					{/if}
 
-						<b class="price" style:color={canPay ? 'green' : 'red'}>
-							{price}
-						</b>
+					<div class="record-info">
+						<span>{orderSummary(record.data)}</span>
+						<small>
+							<i>{record.data?.Fecha}</i>
+						</small>
 					</div>
-					<b
-						style:background={ORDER_STATES_MAP[record.data.Estado]}
-						style="text-align: center; border-radius: 5px; padding: 6px 3px; color: white; font-size: 17px;"
-						>{record.data.Estado}</b
-					>
-					<!-- {record.data.Comanda} -->
-				</a>
-			{/each}
-		</div>
 
-		<div class="content">
-			{@render children()}
-		</div>
+					<b class="price" style:color={canPay ? 'green' : 'red'}>
+						{price}
+					</b>
+				</div>
+				<b
+					style:background={ORDER_STATES_MAP[record.data.Estado]}
+					style="text-align: center; border-radius: 5px; padding: 6px 3px; color: white; font-size: 17px;"
+					>{record.data.Estado}</b
+				>
+				<!-- {record.data.Comanda} -->
+			</a>
+		{/each}
 	</div>
-{:else}
-	<div class="no-db-warning">
-		<p>
-			{m.db_not_connected_to_any()} <br />
-			{m.db_configure_in_settings()}
-		</p>
 
-		<a href="/settings/database" class="button"> Ir a Ajustes de Base de Datos </a>
+	<div class="content">
+		{@render children()}
 	</div>
-{/if}
+</div>
 
 <style>
 	:global(section.content:has(.duoshell)) {

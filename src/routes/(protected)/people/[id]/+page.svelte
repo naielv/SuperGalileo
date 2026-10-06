@@ -9,13 +9,14 @@
 			mdiAccount,
 			mdiArrowLeft,
 			mdiBadgeAccount,
+			mdiCoffee,
 			mdiContentSave,
 			mdiDelete,
 			mdiEye,
 			mdiEyeOff,
 			mdiWallet
 	} from '@mdi/js';
-
+	import userGenericIcon from "$lib/assets/user_generic.png";
 	import FormSubmitButton from '$lib/comp/buttons/FormSubmitButton.svelte';
 	import ActionButton from '$lib/comp/buttons/ActionButton.svelte';
 	import LinkButton from '$lib/comp/buttons/LinkButton.svelte';
@@ -29,7 +30,7 @@
 	let aula = $state('');
 	let roles = $state('');
 	let oculto = $state(false);
-	let markdown = $state('');
+	let notas_cafe = $state('');
 	let monederoBalance = $state(0);
 	let existingRegions = $state([]);
 	let rev = $state('');
@@ -53,27 +54,28 @@
 		aula = '';
 		roles = '';
 		oculto = false;
-		markdown = '';
+		notas_cafe = '';
 		monederoBalance = 0;
 		rev = '';
 	}
 
 	function toggleRole(role) {
-		const current = roles
-			.split(',')
-			.map((r) => r.trim())
-			.filter(Boolean);
+		const current = roles;
 
 		roles = current.includes(role)
-			? current.filter((r) => r !== role).join(',')
-			: [...current, role].join(',');
+			? current.filter((r) => r !== role)
+			: [...current, role];
 	}
 	async function loadData(personId) {
-		var user = await pb.collection("users").getOne(personId);
+		var user = {};
+		if (!isNew) {
+			user = await pb.collection("users").getOne(personId);
+		}
 		nombre = user.name || '';
 		aula = user.aula || '';
 		roles = user.roles || '';
 		oculto = user.oculto || false;
+		notas_cafe = user.notas_cafe || '';
 		monederoBalance = Number(user.Saldo_Cafe || 0);
 	}
 
@@ -85,23 +87,22 @@
 			aula: aula,
 			roles: roles,
 			oculto: oculto,
-			Saldo_Cafe: monederoBalance,
-			markdown: markdown
+			notas_cafe: notas_cafe
 		};
 
 		try {
 			if (isNew) {
 				const newPerson = await pb.collection('users').create(personData);
-				toast.success(m.person_created());
+				toast.success(m.save_success());
 				goto(`/people/${newPerson.id}`);
 			} else {
 				await pb.collection('users').update(id, personData);
-				toast.success(m.person_updated());
+				toast.success(m.save_success());
 				loadData(id);
 			}
 		} catch (error) {
 			console.error(error);
-			toast.error(m.error_saving_person() + ': ' + error.message);
+			toast.error('Error guardando: ' + error.message);
 		}
 	}
 
@@ -126,91 +127,73 @@
 	});
 </script>
 
-<form class="formflex" onsubmit={savePerson}>
+<form onsubmit={savePerson}>
+	<div class="actions">
+		<FormSubmitButton label={isNew ? m.new_person() : m.save()} icon={mdiContentSave} />
+		{#if !isNew}
+			<ActionButton
+				label={m.delete()}
+				icon={mdiDelete}
+				background="#9f1a1a"
+				onclick={deletePerson}
+			/>
+			<LinkButton
+				href={`/people/${id}/payments`}
+				label="Movimientos de pagos"
+				icon={mdiWallet}
+			/>
+		{/if}
+	</div>
 	<div class="form-layout">
-		<div>
-			<fieldset>
-				<legend>
-					<SvgIcon path={mdiAccount} type="mdi" size="1.2em" />
-					{m.personal_data()}
-				</legend>
-
-				<label>
-					<b>{m.full_name()}</b>
-					<input type="text" bind:value={nombre} placeholder="Ej. Juan Pérez" required />
-				</label>
-
-				<label>
-					<b>{m.region_classroom()}</b>
-					<input type="text" bind:value={aula} placeholder="Ej. Aula C" list="regions-list" />
-
-					<datalist id="regions-list">
-						{#each existingRegions as r}
-							<option value={r}>{r}</option>
-						{/each}
-					</datalist>
-
-					<small class="help-text">
-						{m.region_classroom_placeholder()}
-					</small>
-				</label>
-
-				<label>
-					<b>{m.roles()}:</b>
-					<input type="text" bind:value={roles} placeholder="A,B,C" />
-
-					<small class="help-text">
-						{m.roles_placeholder()}
-					</small>
-				</label>
-
-				<label>
-					<b>{m.wallet_balance()}</b>
-					<input disabled type="number" step="0.01" bind:value={monederoBalance} />
-				</label>
-
-				<label style="margin-top: 15px;">
-					<b>{m.notes_section()}:</b>
-
-					<textarea bind:value={markdown} rows="6" placeholder={m.notes_section_placeholder()}
-					></textarea>
-				</label>
-
-				<label class="inline-check input">
-					<input type="checkbox" style="display: none;" bind:checked={oculto} />
-
-					<SvgIcon path={oculto ? mdiEyeOff : mdiEye} type="mdi" size="1.6em" />
-
-					<span>
-						{oculto ? m.hide_from_inputs() : m.show_in_inputs()}
-					</span>
-				</label>
-			</fieldset>
-
-			<div class="form-actions">
-				<FormSubmitButton label={isNew ? m.new_person() : m.save()} icon={mdiContentSave} />
-
-				{#if !isNew}
-					<ActionButton
-						label={m.delete()}
-						icon={mdiDelete}
-						background="#9f1a1a"
-						onclick={deletePerson}
-					/>
-					<LinkButton
-						href={`/people/${id}/payments`}
-						label="Movimientos de pagos"
-						icon={mdiWallet}
-					/>
-				{/if}
+		<fieldset class="idCard">
+			<div class="photo">
+				<img src={userGenericIcon} alt="">
 			</div>
-		</div>
+			<div class="idFields">
+				<label>
+					<small>{m.full_name()}</small>
+					<input style="font-size: 22.5px;" type="text" bind:value={nombre} placeholder="Ej. Juan Pérez" required />
+				</label>
+				<div class="half">
+					<label>
+						<small>{m.region_classroom()}</small>
+						<select bind:value={aula}>
+							<option value="">Sin Aula</option>
+							{#each existingRegions as r}
+								<option value={r}>{r}</option>
+							{/each}
+						</select>
+					</label>
+					<label>
+						<small style="text-align: right;">Saldo Café</small>
+						<b style="text-align: right; font-size: 22.5px;">{monederoBalance.toLocaleString("es-ES", {style: 'currency', currency: 'EUR'})}</b>
+					</label>
+				</div>
+			</div>
+		</fieldset>
+		<fieldset>
+			<h2>Datos del café</h2>
+
+			<label>
+				<b>{m.notes_section()}:</b>
+
+				<textarea bind:value={notas_cafe} rows="6" placeholder={m.notes_section_placeholder()}
+				></textarea>
+			</label>
+
+			<label class="inline-check input">
+				<input type="checkbox" style="display: none;" bind:checked={oculto} />
+
+				<SvgIcon path={oculto ? mdiEyeOff : mdiEye} type="mdi" size="1.6em" />
+
+				<span>
+					{oculto ? m.hide_from_inputs() : m.show_in_inputs()}
+				</span>
+			</label>
+		</fieldset>
 
 		<fieldset>
-			<legend>
-				<SvgIcon path={mdiBadgeAccount} type="mdi" size="1.2em" />
-				{m.roles_and_permissions()}
-			</legend>
+			<h2>{m.roles_and_permissions()}</h2>
 
 			<div class="roles-permissions">
 				{#each Object.entries(predefinedRoles) as [category, permissions]}
@@ -223,8 +206,6 @@
 							<input
 								type="checkbox"
 								checked={roles
-									.split(',')
-									.map((r) => r.trim())
 									.includes(key)}
 								onchange={() => toggleRole(key)}
 							/>
@@ -238,6 +219,60 @@
 
 
 <style>
+	form {
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		gap: 2.5px;
+		padding: 15px;
+	}
+	form h2 {
+		text-align: center;
+		margin: 0;
+		margin-bottom: 7.5px;
+	}
+	.idCard {
+		display: grid;
+		grid-template-columns: 120px 1fr;
+		padding: 0 5px;
+		border-radius:5px;
+		overflow: hidden;
+	}
+	.idCard .photo {
+		border-right: 1px dashed gray;
+	}
+	.idCard .photo img {
+		width: 100%;
+	}
+	.idCard .idFields {
+		padding: 5px;
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+		justify-content: space-around;
+	}
+	.idCard label {
+		margin: 0;
+	}
+	.idCard small,
+	.idCard b {
+		display: block;
+	}
+	.idCard input,
+	.idCard select {
+		border: none;
+		border: 1px solid blue;
+		background-color: transparent !important;
+		font-size: 15px;
+		padding: 2.5px 5px;
+		margin: 0;
+		
+	}
+	.idCard .half {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 5px;
+	}
 	.roles-permissions {
 		display: flex;
 		flex-direction: column;
@@ -270,9 +305,12 @@
 	}
 
 	.form-layout {
-		display: grid;
-		grid-template-columns: 1fr;
-		gap: 20px;
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		gap: 5px;
+		align-items: flex-start;
+		margin-top: 5px;
 	}
 
 	@media (min-width: 768px) {
