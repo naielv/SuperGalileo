@@ -5,13 +5,13 @@
 	import Header from '$lib/comp/Header.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { Toaster } from 'svelte5-toaster'
-	let { children } = $props();
+	let { children, data } = $props();
 
 </script>
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
-	<title>{m.app_name()}</title>
+	<title>SuperOrtuella</title>
 	<meta name="theme-color" content="hsl(0deg 40% 30%)" />
 </svelte:head>
 
@@ -20,6 +20,7 @@
 	style:--accent="hsl(0deg 40% 30%)"
 >
 	<Header
+		user={data.user}
 		toggleSidebar={() => {
 			window.dispatchEvent(new CustomEvent('sidebar-toggle'));
 		}}

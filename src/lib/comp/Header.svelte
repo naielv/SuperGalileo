@@ -5,11 +5,10 @@
 	import { m } from '$lib/paraglide/messages.js';
 	import { onMount, onDestroy } from 'svelte';
 	import { getLocalRawDb, startLiveSync, stopLiveSync } from '$lib/db';
-	import { pb } from '$lib/pb';
 
 	// 1. Declaración correcta de Props en Svelte 5
-	let { onDatabaseHashChange = () => {}, toggleSidebar = () => {} } = $props();
-	let username = $derived(pb.authStore?.model?.name ?? null);
+	let { onDatabaseHashChange = () => {}, toggleSidebar = () => {}, user = null } = $props();
+	let username = $derived(user?.name ?? user?.preferred_username ?? user?.email ?? null);
 </script>
 
 <nav aria-label="Breadcrumb" class="breadcrumbs no-print">
@@ -17,8 +16,8 @@
 		<button class="menu-toggle" onclick={toggleSidebar}>
 			<SvgIcon path={mdiMenu} type="mdi" size="1.5em" />
 		</button>
-		<a class="short-name" href="/" style="font-weight: bold;">{m.app_name_short()}</a>
-		<a class="long-name" href="/" style="font-weight: bold;">{m.app_name()}</a>
+		<a class="short-name" href="/" style="font-weight: bold;">Ort</a>
+		<a class="long-name" href="/" style="font-weight: bold;">SuperOrtuella</a>
 	</div>
 	<div
 		style="display: flex; align-items: center; gap: 2.5px; flex-wrap: wrap; justify-content: flex-end;"
@@ -37,7 +36,7 @@
 				<option value="eu">Euskara</option>
 			</select>
 		</details>
-		{#if pb.authStore?.model?.id}
+		{#if user}
 			<a href="/profile" class="database-switcher-container">
 				<SvgIcon type="mdi" path={mdiAccount} size="24" />
 				<span class="database-switcher">{username}</span>

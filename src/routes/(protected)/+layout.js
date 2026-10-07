@@ -1,8 +1,8 @@
 import { redirect } from '@sveltejs/kit';
-import { pb } from '$lib/pb';
 
-export function load() {
-	if (!pb.authStore.isValid) {
-		throw redirect(303, '/login');
-	}
+export function load({ parent }) {
+	return parent().then(({ user }) => {
+		if (!user) throw redirect(303, '/login');
+		return { user };
+	});
 }
