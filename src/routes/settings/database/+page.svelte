@@ -1,4 +1,5 @@
 <script>
+	import { BrowserQRCodeReader } from '@zxing/browser';
 	import FormSubmitButton from '$lib/comp/buttons/FormSubmitButton.svelte';
 	import LinkButton from '$lib/comp/buttons/LinkButton.svelte';
 	import SvgIcon from '@jamescoyle/svelte-icon';
@@ -11,7 +12,7 @@
 		mdiSync,
 		mdiTestTube
 	} from '@mdi/js';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import { compactLocalDb, syncOnce, testLocalDb, testRemoteDb } from '$lib/db';
 	import { m } from '$lib/paraglide/messages';
 	import { toast } from 'svelte5-toaster';
@@ -23,6 +24,11 @@
 	let busyById = $state({});
 	let editingId = $state(null);
 	let form = $state(defaultForm());
+	let scannerDialog;
+	let videoElement;
+	let scannerControls;
+	let scanning = $state(false);
+	let qrError = $state('');
 
 	function defaultForm() {
 		return {
@@ -306,6 +312,97 @@
 		resetForm();
 	}
 
+	function importQrConfiguration(contents) {
+		let config;
+		try {
+			config = JSON.parse(contents);
+		} catch {
+			qrError = 'El código QR debe contener una configuración en formato JSON.';
+			return;
+		}
+
+		if (!config || typeof config !== 'object' || Array.isArray(config)) {
+			qrError = 'El código QR no contiene una configuración válida.';
+			return;
+		}
+
+		const textFields = [
+			'name',
+			'localDatabase',
+			'serverUrl',
+			'remoteDatabase',
+			'username',
+			'password',
+			'encryptionKey'
+		];
+		const imported = {};
+		for (const field of textFields) {
+			if (field in config) {
+				if (typeof config[field] !== 'string') {
+					qrError = `El campo "${field}" debe ser texto.`;
+					return;
+				}
+				imported[field] = config[field];
+			}
+		}
+
+		if ('syncEnabled' in config) {
+			if (typeof config.syncEnabled !== 'boolean') {
+				qrError = 'El campo "syncEnabled" debe ser verdadero o falso.';
+				return;
+			}
+			imported.syncEnabled = config.syncEnabled;
+		}
+
+		if (
+			!['localDatabase', 'serverUrl', 'remoteDatabase'].some((field) => imported[field]?.trim())
+		) {
+			qrError = 'El QR debe incluir el nombre de una base local o los datos de un servidor remoto.';
+			return;
+		}
+
+		form = { ...form, ...imported };
+		qrError = '';
+		toast.success('Configuración QR cargada. Revisa los datos y guarda la base.');
+		closeQrScanner();
+	}
+
+	async function startQrScanner() {
+		qrError = '';
+		scanning = true;
+
+		try {
+			scannerDialog.showModal();
+			const reader = new BrowserQRCodeReader();
+			const controls = await reader.decodeFromVideoDevice(undefined, videoElement, (result) => {
+				if (result && scanning) {
+					importQrConfiguration(result.getText());
+				}
+			});
+			if (scanning) {
+				scannerControls = controls;
+			} else {
+				controls.stop();
+			}
+		} catch (error) {
+			scanning = false;
+			qrError =
+				error instanceof Error
+					? error.message
+					: 'No se pudo acceder a la cámara. Comprueba los permisos del navegador.';
+			toast.error('No se pudo iniciar el escáner QR.');
+		}
+	}
+
+	function closeQrScanner() {
+		scanning = false;
+		scannerControls?.stop();
+		scannerControls = undefined;
+		if (scannerDialog?.open) {
+			scannerDialog.close();
+		}
+	}
+
 	onMount(() => {
 		online = navigator.onLine;
 		const handleOnline = () => {
@@ -326,16 +423,14 @@
 			window.removeEventListener('offline', handleOffline);
 		};
 	});
+
+	onDestroy(closeQrScanner);
 </script>
 
 <div class="flex-header">
 	<h1>Ajustes: Base de datos</h1>
 	<div class="top-actions">
-		<LinkButton
-			href="/settings/database/test"
-			icon={mdiDatabase}
-			label="Ver registros"
-		/>
+		<LinkButton href="/settings/database/test" icon={mdiDatabase} label="Ver registros" />
 	</div>
 </div>
 <main>
@@ -487,12 +582,30 @@
 		</fieldset>
 		<div class="form-actions">
 			<FormSubmitButton label={editingId ? 'Guardar cambios' : 'Añadir base de datos'} />
+			<button type="button" class="button" onclick={startQrScanner}>Escanear código QR</button>
 			{#if editingId}
 				<button type="button" class="button" onclick={resetForm}>Cancelar edicion</button>
 			{/if}
 		</div>
 	</form>
 </main>
+
+<dialog bind:this={scannerDialog} onclose={closeQrScanner} aria-labelledby="qr-scanner-title">
+	<h2 id="qr-scanner-title">Escanear configuración QR</h2>
+	<p>
+		El QR debe contener un objeto JSON con campos como
+		<code>name</code>, <code>localDatabase</code>, <code>serverUrl</code>,
+		<code>remoteDatabase</code>, <code>username</code>, <code>password</code>,
+		<code>encryptionKey</code> y <code>syncEnabled</code>.
+	</p>
+	<video bind:this={videoElement} autoplay muted playsinline></video>
+	{#if qrError}
+		<p class="error-text" role="alert">{qrError}</p>
+	{/if}
+	<div class="form-actions">
+		<button type="button" class="button" onclick={closeQrScanner}>Cancelar</button>
+	</div>
+</dialog>
 
 <style>
 	h3 {
@@ -545,6 +658,27 @@
 		margin-top: 4px;
 	}
 
+	dialog {
+		width: min(90vw, 520px);
+		max-height: 90vh;
+		border: 0;
+		border-radius: 8px;
+		padding: 20px;
+		box-shadow: 0 8px 32px rgb(0 0 0 / 30%);
+	}
+
+	dialog::backdrop {
+		background: rgb(0 0 0 / 55%);
+	}
+
+	dialog video {
+		display: block;
+		width: 100%;
+		max-height: 55vh;
+		background: #111;
+		object-fit: contain;
+	}
+
 	small {
 		display: block;
 		margin-top: 4px;
@@ -563,5 +697,4 @@
 			display: none;
 		}
 	}
-
 </style>

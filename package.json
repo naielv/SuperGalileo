@@ -32,6 +32,7 @@
 		"@jamescoyle/svelte-icon": "^0.1.1",
 		"@mdi/js": "^7.4.47",
 		"@sveltejs/adapter-static": "^3.0.10",
+		"@zxing/browser": "^0.2.1",
 		"crypto-js": "^4.2.0",
 		"events": "^3.3.0",
 		"pouchdb": "^9.0.0",
