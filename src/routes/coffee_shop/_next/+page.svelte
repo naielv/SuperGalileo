@@ -228,7 +228,8 @@
 </script>
 
 <div class="co">
-    <h1>Comanda creada, ¿Que quieres hacer?</h1>
+	<h2>Comanda creada</h2>
+    <h1>¿Que quieres hacer?</h1>
     <div class="co2">
         <LinkButton
             href="/coffee_shop/_new"

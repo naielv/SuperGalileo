@@ -277,6 +277,7 @@
 		background-color: wheat;
 		height: 100%;
 		padding: 15px;
+		overflow-y: auto;
 	}
 	@media print {
 		.formflex {

@@ -26,7 +26,6 @@
 
 	function selectPerson(person) {
 		selected = person;
-		open = false;
 	}
 
 	onMount(() => {
