@@ -186,10 +186,13 @@
 				>
 					<summary>
 						<CoffeeOrderLayers order={details} size={168} />
-						<span class="summary-copy">
+						<span class="summary-copy" style="width: 100%; text-align: center;">
 							<strong>{personName(order)}</strong>
-							<span>{person.Region || 'Sin aula'}</span>
-							<span>{order.Fecha || 'Sin fecha'} · {order.Estado || 'Pedido'}</span>
+							<div style="display: flex; justify-content: space-around; width: 100%;">
+								<span>{order.Estado || 'Pedido'}</span>
+								<span>{person.Region || 'Sin aula'}</span>
+							</div>
+							<small>{order.Fecha || 'Sin fecha'}</small>
 						</span>
 					</summary>
 
@@ -262,7 +265,7 @@
 	}
 	.order-card summary {
 		display: grid;
-		grid-template-rows: 168px minmax(0, 1fr) auto;
+		grid-template-rows: 168px minmax(0, 1fr);
         justify-items: center;
 		align-items: center;
 		gap: 12px;
@@ -277,7 +280,7 @@
 		display: flex;
 		min-width: 0;
 		flex-direction: column;
-		gap: 5px;
+		gap: 2px;
 	}
 	.summary-copy strong {
 		font-size: 1.2rem;
@@ -286,10 +289,12 @@
 	.summary-copy span {
 		color: #334155;
 		overflow-wrap: anywhere;
+		font-size: 1rem;
 	}
-	.summary-copy span:last-child {
-		font-size: 0.85rem;
-		font-weight: 600;
+	.summary-copy small {
+		color: #334155;
+		overflow-wrap: anywhere;
+		font-size: 1rem;
 	}
 	.summary-chevron {
 		align-self: start;
@@ -418,11 +423,32 @@
 	}
 	@media (max-width: 620px) {
 		.order-card summary {
-			grid-template-rows: 120px minmax(0, 1fr) auto;
+			padding: 8px 4px;
+			grid-template-rows: 120px minmax(0, 1fr);
 		}
 		.order-card summary :global(.layers) {
 			width: 120px !important;
 			height: 120px !important;
+		}
+		.kitchen-grid {
+			grid-template-columns: repeat(auto-fill, minmax(125px, 1fr));
+			gap: 4px;
+			line-height: normal;
+			margin: 0;
+		}
+		.summary-copy strong {
+			font-size: 1.175rem;
+			overflow-wrap: anywhere;
+		}
+		.summary-copy span {
+			color: #334155;
+			overflow-wrap: anywhere;
+			font-size: 0.9rem;
+		}
+		.summary-copy small {
+			color: #334155;
+			overflow-wrap: anywhere;
+			font-size: 0.9rem;
 		}
 	}
     main{
