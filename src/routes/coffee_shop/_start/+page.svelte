@@ -242,6 +242,7 @@
             label="Preparar café"
             icon={mdiCoffeeMaker}
         />
+		<LinkButton href="/coffee_shop/_kitchen" label="Modo cocina" icon={mdiCoffeeMaker} />
     </div>
 
     <div class="co2">

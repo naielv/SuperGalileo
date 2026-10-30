@@ -239,6 +239,14 @@
 </main>
 
 <style>
+	main {
+		padding: 15px;
+        background-color: wheat;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+  	}
 	.kitchen-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
