@@ -282,7 +282,7 @@
 						</div>
 
 						<b class="price" style:color={canPay ? 'green' : 'red'}>
-							{price} €
+							{price}
 						</b>
 					</div>
 					<b
