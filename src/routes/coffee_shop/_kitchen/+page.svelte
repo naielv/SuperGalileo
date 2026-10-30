@@ -39,7 +39,19 @@
 	}
 
 	function sortOrders(items) {
-		return items.sort((a, b) => String(b.Fecha || '').localeCompare(String(a.Fecha || '')));
+		const collator = new Intl.Collator('es', { sensitivity: 'base', numeric: true });
+		return items.sort((a, b) => {
+			const dateComparison = String(b.Fecha || '').localeCompare(String(a.Fecha || ''));
+			if (dateComparison) return dateComparison;
+
+			const regionComparison = collator.compare(
+				String(personFor(a).Region || ''),
+				String(personFor(b).Region || '')
+			);
+			if (regionComparison) return regionComparison;
+
+			return collator.compare(personName(a), personName(b));
+		});
 	}
 
 	async function loadData() {

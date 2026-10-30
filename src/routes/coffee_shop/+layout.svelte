@@ -207,6 +207,24 @@
 		return people.get(`personas:${record.data?.Persona}`);
 	}
 
+	function sortRecords(items) {
+		const collator = new Intl.Collator('es', { sensitivity: 'base', numeric: true });
+		return items.toSorted((a, b) => {
+			const dateComparison = String(b.data?.Fecha || '').localeCompare(String(a.data?.Fecha || ''));
+			if (dateComparison) return dateComparison;
+
+			const regionComparison = collator.compare(
+				String(getPerson(a)?.data?.Region || ''),
+				String(getPerson(b)?.data?.Region || '')
+			);
+			if (regionComparison) return regionComparison;
+
+			const nameFor = (record) =>
+				getPerson(record)?.data?.Nombre || record.data?.Persona || 'Persona desconocida';
+			return collator.compare(nameFor(a), nameFor(b));
+		});
+	}
+
 	function getPersonId(record) {
 		return record._id.split(':', 2)[1];
 	}
@@ -244,7 +262,7 @@
 				<a href="/coffee_shop/_new">Nuevo</a>
 			</div>
 
-			{#each records.toSorted((a, b) => b.data.Fecha.localeCompare(a.data.Fecha) || getPerson(a)?.Region?.localeCompare(getPerson(b)?.Region) || getPerson(a)?.Nombre?.localeCompare(getPerson(b)?.Nombre)) as record}
+			{#each sortRecords(records) as record}
 				{@const person = getPerson(record)}
 				{@const personId = getPersonId(record)}
 				{@const price = getOrderPrice(prices, record)}
