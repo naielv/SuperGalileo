@@ -36,6 +36,7 @@
 		"crypto-js": "^4.2.0",
 		"events": "^3.3.0",
 		"pouchdb": "^9.0.0",
+		"qrcode": "^1.5.4",
 		"svelte5-toaster": "^0.1.0"
 	}
 }

@@ -1,5 +1,6 @@
 <script>
 	import { BrowserQRCodeReader } from '@zxing/browser';
+	import QRCode from 'qrcode';
 	import FormSubmitButton from '$lib/comp/buttons/FormSubmitButton.svelte';
 	import LinkButton from '$lib/comp/buttons/LinkButton.svelte';
 	import SvgIcon from '@jamescoyle/svelte-icon';
@@ -9,6 +10,7 @@
 		mdiDelete,
 		mdiHelpNetwork,
 		mdiPencil,
+		mdiQrcode,
 		mdiSync,
 		mdiTestTube
 	} from '@mdi/js';
@@ -25,9 +27,13 @@
 	let editingId = $state(null);
 	let form = $state(defaultForm());
 	let scannerDialog;
+	let exportQrDialog;
 	let videoElement;
 	let scannerControls;
 	let scanning = $state(false);
+	let exportingQr = $state(false);
+	let exportQrData = $state('');
+	let exportQrName = $state('');
 	let qrError = $state('');
 
 	function defaultForm() {
@@ -312,6 +318,35 @@
 		resetForm();
 	}
 
+	async function exportQrConfiguration(config) {
+		exportingQr = true;
+		try {
+			const exportConfig = {
+				name: config.name,
+				localDatabase: config.localDatabase,
+				serverUrl: config.serverUrl,
+				remoteDatabase: config.remoteDatabase,
+				username: config.username,
+				password: config.password,
+				encryptionKey: config.encryptionKey,
+				syncEnabled: config.syncEnabled
+			};
+			exportQrData = await QRCode.toDataURL(JSON.stringify(exportConfig), {
+				errorCorrectionLevel: 'M',
+				margin: 2,
+				width: 320
+			});
+			exportQrName = config.name;
+			exportQrDialog.showModal();
+		} catch (error) {
+			toast.error(
+				`No se pudo generar el código QR: ${error instanceof Error ? error.message : 'Error desconocido'}`
+			);
+		} finally {
+			exportingQr = false;
+		}
+	}
+
 	function importQrConfiguration(contents) {
 		let config;
 		try {
@@ -518,6 +553,15 @@
 								<SvgIcon path={mdiPencil} type="mdi" size="1.75em" />
 							</button>
 							<button
+								class="button mini-btn accent"
+								onclick={() => exportQrConfiguration(db)}
+								disabled={exportingQr}
+								title="Exportar configuración como QR"
+								aria-label="Exportar configuración como QR"
+							>
+								<SvgIcon path={mdiQrcode} type="mdi" size="1.75em" />
+							</button>
+							<button
 								class="button mini-btn danger"
 								onclick={() => removeDatabase(db)}
 								title={m.delete()}
@@ -607,6 +651,30 @@
 	</div>
 </dialog>
 
+<dialog bind:this={exportQrDialog} aria-labelledby="qr-export-title">
+	<h2 id="qr-export-title">Exportar configuración QR</h2>
+	<p>
+		Configuración: <b>{exportQrName}</b>
+	</p>
+	<p class="warning-text">
+		Este QR contiene los datos de conexión, incluidas la contraseña y la clave de encriptación si
+		están configuradas. Compártelo solo con personas de confianza.
+	</p>
+	{#if exportQrData}
+		<img
+			class="qr-preview"
+			src={exportQrData}
+			alt="Código QR de la configuración de base de datos"
+		/>
+	{/if}
+	<div class="form-actions">
+		<a class="button" href={exportQrData} download="configuracion-base-de-datos.png">
+			Descargar PNG
+		</a>
+		<button type="button" class="button" onclick={() => exportQrDialog.close()}>Cerrar</button>
+	</div>
+</dialog>
+
 <style>
 	h3 {
 		margin-top: 15px;
@@ -658,6 +726,10 @@
 		margin-top: 4px;
 	}
 
+	.warning-text {
+		color: #7a4b00;
+	}
+
 	dialog {
 		width: min(90vw, 520px);
 		max-height: 90vh;
@@ -677,6 +749,13 @@
 		max-height: 55vh;
 		background: #111;
 		object-fit: contain;
+	}
+
+	.qr-preview {
+		display: block;
+		width: min(100%, 320px);
+		height: auto;
+		margin: 0 auto;
 	}
 
 	small {
