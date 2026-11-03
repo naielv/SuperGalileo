@@ -16,9 +16,7 @@
 		mdiEyeOff
 	} from '@mdi/js';
 
-	import FormSubmitButton from '$lib/comp/buttons/FormSubmitButton.svelte';
-	import ActionButton from '$lib/comp/buttons/ActionButton.svelte';
-	import LinkButton from '$lib/comp/buttons/LinkButton.svelte';
+	import Button from '$lib/comp/buttons/Button.svelte';
 	import { toast } from 'svelte5-toaster';
 
 	let id = $derived(page.params.id);
@@ -264,10 +262,11 @@
 				</fieldset>
 
 				<div class="form-actions">
-					<FormSubmitButton label={isNew ? m.new_person() : m.save()} icon={mdiContentSave} />
+					<Button type="submit" label={isNew ? m.new_person() : m.save()} icon={mdiContentSave} />
 
 					{#if !isNew}
-						<ActionButton
+						<Button
+							type="action"
 							label={m.delete()}
 							icon={mdiDelete}
 							background="#9f1a1a"

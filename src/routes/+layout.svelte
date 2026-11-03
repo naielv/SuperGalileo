@@ -1,7 +1,6 @@
 <script>
 	import favicon from '$lib/assets/favicon.svg';
 	import '$lib/assets/style.css';
-	import SidebarButton from '$lib/comp/buttons/SidebarButton.svelte';
 	import Header from '$lib/comp/Header.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { Toaster } from 'svelte5-toaster'
@@ -61,6 +60,11 @@
 		flex: 1;
 		padding: 20px;
 		overflow-y: auto;
+	}
+	@media only screen and (max-width: 550px) {
+		.shell section.content {
+			padding: 10px;
+		}
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.shell {

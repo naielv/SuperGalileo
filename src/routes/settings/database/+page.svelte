@@ -1,8 +1,7 @@
 <script>
 	import { BrowserQRCodeReader } from '@zxing/browser';
 	import QRCode from 'qrcode';
-	import FormSubmitButton from '$lib/comp/buttons/FormSubmitButton.svelte';
-	import LinkButton from '$lib/comp/buttons/LinkButton.svelte';
+	import Button from '$lib/comp/buttons/Button.svelte';
 	import SvgIcon from '@jamescoyle/svelte-icon';
 	import {
 		mdiArrowCollapse,
@@ -465,7 +464,7 @@
 <div class="flex-header">
 	<h1>Ajustes: Base de datos</h1>
 	<div class="top-actions">
-		<LinkButton href="/settings/database/test" icon={mdiDatabase} label="Ver registros" />
+		<Button type="link" href="/settings/database/test" icon={mdiDatabase} label="Ver registros" />
 	</div>
 </div>
 <main>
@@ -625,7 +624,7 @@
 			</label>
 		</fieldset>
 		<div class="form-actions">
-			<FormSubmitButton label={editingId ? 'Guardar cambios' : 'Añadir base de datos'} />
+			<Button type="submit" label={editingId ? 'Guardar cambios' : 'Añadir base de datos'} />
 			<button type="button" class="button" onclick={startQrScanner}>Escanear código QR</button>
 			{#if editingId}
 				<button type="button" class="button" onclick={resetForm}>Cancelar edicion</button>

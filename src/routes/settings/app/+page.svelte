@@ -4,7 +4,7 @@
 	import SvgIcon from '@jamescoyle/svelte-icon';
 	import { mdiCog, mdiWeatherSunny, mdiCoffee, mdiContentSave } from '@mdi/js';
 	import { m } from '$lib/paraglide/messages';
-	import FormSubmitButton from '$lib/comp/buttons/FormSubmitButton.svelte';
+	import Button from '$lib/comp/buttons/Button.svelte';
 	import { toast } from 'svelte5-toaster';
 
 	let activeDbName = $state('');
@@ -187,7 +187,7 @@
 			</fieldset>
 
 			<div class="form-actions">
-				<FormSubmitButton label={m.save()} icon={mdiContentSave} />
+				<Button type="submit" label={m.save()} icon={mdiContentSave} />
 			</div>
 		</form>
 	{:else}

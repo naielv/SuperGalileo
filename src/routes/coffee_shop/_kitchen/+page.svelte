@@ -261,6 +261,7 @@
         display: flex;
         flex-direction: column;
         gap: 5px;
+		overflow-y: auto;
   	}
 	.kitchen-grid {
 		display: grid;

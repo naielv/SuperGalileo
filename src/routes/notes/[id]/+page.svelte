@@ -5,9 +5,8 @@
 	import { getActiveDb, getActiveDbConfig, safeRandomString } from '$lib/db';
 	import SvgIcon from '@jamescoyle/svelte-icon';
 	import { mdiArrowLeft, mdiContentSave, mdiDelete, mdiNote, mdiPrinter } from '@mdi/js';
-	import FormSubmitButton from '$lib/comp/buttons/FormSubmitButton.svelte';
+	import Button from '$lib/comp/buttons/Button.svelte';
 	import PersonSelector from '$lib/comp/PersonSelector.svelte';
-	import ActionButton from '$lib/comp/buttons/ActionButton.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { toast } from 'svelte5-toaster';
 
@@ -137,14 +136,16 @@
 		<textarea class="body" bind:value={contenido} placeholder="Escribe el contenido..."></textarea>
 
 		<div class="actions">
-			<FormSubmitButton label={'Guardar'} icon={mdiContentSave} />
-			<ActionButton
+			<Button type="submit" label={'Guardar'} icon={mdiContentSave} />
+			<Button
+				type="action"
 				onclick={() => {window.print()}}
 				icon={mdiPrinter}
 				label="Imprimir"
 			/>
 			{#if isNew }
-				<ActionButton
+				<Button
+					type="action"
 					onclick={deleteNote}
 					icon={mdiDelete}
 					label="Eliminar"

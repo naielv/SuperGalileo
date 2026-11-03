@@ -3,7 +3,7 @@
 	import { getLocalDb } from '$lib/db';
 	import SvgIcon from '@jamescoyle/svelte-icon';
 	import { mdiDatabase, mdiPlus, mdiDelete, mdiPencil, mdiRefresh, mdiFilter } from '@mdi/js';
-	import FormSubmitButton from '$lib/comp/buttons/FormSubmitButton.svelte';
+	import Button from '$lib/comp/buttons/Button.svelte';
 	import { toast } from 'svelte5-toaster';
 
 	let activeDbName = $state('');
@@ -328,7 +328,8 @@
         </fieldset>
 
         <div class="form-actions">
-            <FormSubmitButton
+            <Button
+                type="submit"
                 label={editingRecordId ? 'Guardar cambios' : 'Crear registro'}
                 icon={mdiPlus}
             />

@@ -1,5 +1,5 @@
 <script>
-	import LinkButton from '$lib/comp/buttons/LinkButton.svelte';
+	import Button from '$lib/comp/buttons/Button.svelte';
 	import PersonSelector from '$lib/comp/PersonSelector.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import {
@@ -21,6 +21,6 @@
 <h1>{m.settings()}</h1>
 
 <div class="hero3 grid">
-	<LinkButton href="/settings/database" icon={mdiDatabase} label={m.database()} />
-	<LinkButton href="/settings/app" icon={mdiCog} label={m.app_settings()} />
+	<Button type="link" href="/settings/database" icon={mdiDatabase} label={m.database()} />
+	<Button type="link" href="/settings/app" icon={mdiCog} label={m.app_settings()} />
 </div>

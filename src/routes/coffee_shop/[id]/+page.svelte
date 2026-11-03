@@ -3,8 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { getActiveDb, safeRandomString } from '$lib/db';
 	import PersonSelector from '$lib/comp/PersonSelector.svelte';
-	import FormSubmitButton from '$lib/comp/buttons/FormSubmitButton.svelte';
-	import ActionButton from '$lib/comp/buttons/ActionButton.svelte';
+	import Button from '$lib/comp/buttons/Button.svelte';
 	import CoffeeOptionPicker from '$lib/comp/coffee/CoffeeOptionPicker.svelte';
 	import SvgIcon from '@jamescoyle/svelte-icon';
 	import { mdiArrowLeft, mdiContentSave, mdiDelete } from '@mdi/js';
@@ -18,11 +17,11 @@
 		parseOrder,
 		personIdFromValue
 	} from '$lib/coffee';
-	import LinkButton from '$lib/comp/buttons/LinkButton.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
 	import CoffeeOrderLayers from '$lib/comp/coffee/CoffeeOrderLayers.svelte';
 	import { toast } from 'svelte5-toaster';
+	import GridButton from '$lib/comp/buttons/GridButton.svelte';
 
 	let id = $derived(page.params.id);
 	let isNew = $derived(id === '_new');
@@ -216,7 +215,7 @@
 				<textarea bind:value={order.Notas} rows="4" placeholder="Notas adicionales..."></textarea>
 			</details>
 			<hr style="margin: 10px auto; max-width: 75%; border: 2.5px dashed #000;" />
-			<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 15px;">
+			<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 15px 15px 0;">
 				<!-- If saldo < precio, show the amount of debt (delta) -->
 				{#if saldoMonedero < calculateOrderPrice(orderDetails, prices) / 100}
 					<div
@@ -242,15 +241,18 @@
 					</div>
 				{/if}
 			</div>
-			<FormSubmitButton label={saving ? 'Guardando...' : 'Guardar'} icon={mdiContentSave} />
-			{#if !isNew}
-				<ActionButton
-					label="Eliminar"
-					icon={mdiDelete}
-					background="#9f1a1a"
-					onclick={deleteOrder}
-				/>
-			{/if}
+			<div class="hero3 grid">
+				<GridButton type="submit" label={saving ? 'Guardando...' : 'Guardar'} icon={mdiContentSave} />
+				{#if !isNew}
+					<GridButton
+						type="action"
+						label="Eliminar"
+						icon={mdiDelete}
+						background="#9f1a1a"
+						onclick={deleteOrder}
+					/>
+				{/if}
+			</div>
 		</fieldset>
 	</form>
 {:else}
