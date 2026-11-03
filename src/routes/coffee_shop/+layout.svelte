@@ -259,7 +259,7 @@
 		<div class="recordList">
 			<div class="title">
 				<h3>Comandas</h3>
-				<a href="/coffee_shop/_new">Nuevo</a>
+				<a href="/coffee_shop/_start">Iniciar</a>
 			</div>
 
 			{#each sortRecords(records) as record}
