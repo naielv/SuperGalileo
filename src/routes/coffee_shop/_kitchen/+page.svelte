@@ -197,7 +197,7 @@
 					class="order-card status-{(order.Estado || 'Pedido').toLowerCase().replaceAll(' ', '-')}"
 				>
 					<summary>
-						<CoffeeOrderLayers order={details} size={168} />
+						<CoffeeOrderLayers order={details} size={150} />
 						<span class="summary-copy" style="width: 100%; text-align: center;">
 							<strong>{personName(order)}</strong>
 							<div style="display: flex; justify-content: space-around; width: 100%;">
@@ -257,7 +257,7 @@
 	main {
 		padding: 15px;
         background-color: wheat;
-        height: 100%;
+        flex: 1;
         display: flex;
         flex-direction: column;
         gap: 5px;
@@ -265,7 +265,7 @@
   	}
 	.kitchen-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
 		gap: 16px;
 		align-items: start;
 	}
@@ -278,7 +278,7 @@
 	}
 	.order-card summary {
 		display: grid;
-		grid-template-rows: 168px minmax(0, 1fr);
+		grid-template-rows: 150px minmax(0, 1fr);
         justify-items: center;
 		align-items: center;
 		gap: 12px;

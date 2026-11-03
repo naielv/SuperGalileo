@@ -47,12 +47,12 @@
 		flex-direction: column;
 		height: 100vh;
 		background-color: var(--accent, black);
-		/*transition: background-color 0.5s ease-in-out;*/
 	}
 	.shell .row {
 		display: flex;
 		flex-direction: row;
-		height: calc(100% - 42px);
+		flex: 1;
+		overflow: hidden;
 	}
 
 	.shell section.content {
