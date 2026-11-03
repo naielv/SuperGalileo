@@ -1010,7 +1010,7 @@ table .dl-field {
 	}
 
 	.duoshell.collapsed .content {
-		display: block;
+		display: flex;
 	}
 
 	.duoshell .content {
