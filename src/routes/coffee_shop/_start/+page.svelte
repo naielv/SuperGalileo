@@ -13,8 +13,7 @@
 	<h1>¿Que quieres hacer?</h1>
 	<div class="hero3 grid">
 		<GridButton type="link" href="/coffee_shop/_new" icon={mdiPlus} label="Nueva comanda" background="green" />
-		<GridButton type="link" href="/coffee_shop" icon={mdiCoffeeMaker} label="Preparar café" background="purple" />
-		<GridButton type="link" href="/coffee_shop/_kitchen" icon={mdiCoffeeMaker} label="Modo cocina" background="darkgoldenrod" />
+		<GridButton type="link" href="/coffee_shop/_kitchen" icon={mdiCoffeeMaker} label="Preparar café" background="purple" />
 	</div>
 </div>
 
