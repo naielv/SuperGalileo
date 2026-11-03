@@ -2,6 +2,11 @@
 	import Button from '$lib/comp/buttons/Button.svelte';
 	import GridButton from '$lib/comp/buttons/GridButton.svelte';
 	import { mdiCoffeeMaker, mdiPlus } from '@mdi/js';
+	import { onMount } from 'svelte';
+
+	onMount(() => {
+		window.dispatchEvent(new CustomEvent('sidebar-closed'));
+	});
 </script>
 
 <div class="co">

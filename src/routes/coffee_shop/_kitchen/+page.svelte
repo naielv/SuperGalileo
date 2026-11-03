@@ -144,6 +144,7 @@
 	}
 
 	onMount(() => {
+		window.dispatchEvent(new CustomEvent('sidebar-closed'));
 		const initialize = async () => {
 			try {
 				dbInstance = getActiveDb();
