@@ -61,8 +61,6 @@ nav.breadcrumbs a {
 }
 main {
 	background: #fff;
-	max-width: 750px;
-	margin: 0 auto;
 }
 
 .center {
@@ -994,6 +992,12 @@ table .dl-field {
 	padding: 5px;
 	background-color: #fff;
 	overflow: auto;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	justify-content: flex-start;
+	width: 100%;
 }
 
 @media (max-width: 768px) {
