@@ -450,7 +450,7 @@ table {
 	}
 
 	.hero3 {
-		grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 		gap: 2.5px;
 	}
 	nav.breadcrumbs {
