@@ -10,7 +10,7 @@
 </script>
 
 <div class="co">
-	<h1>¡Comanda guardada!</h1>
+	<h1 style="margin-top: 50px;">¡Comanda guardada!</h1>
 	<div class="hero3 grid">
 		<GridButton type="link" href="/coffee_shop/_new" icon={mdiPlus} label="Nueva comanda" background="green" />
 		<GridButton type="link" href="/coffee_shop/_kitchen" icon={mdiCoffeeMaker} label="Preparar café" background="purple" />
